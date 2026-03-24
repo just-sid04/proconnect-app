@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../utils/theme.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -10,138 +9,232 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _logoScale;
+  late Animation<double> _logoFade;
+  late Animation<double> _textFade;
+  late Animation<Offset> _textSlide;
 
   @override
   void initState() {
     super.initState();
-    
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1400));
 
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0, 0.5, curve: Curves.easeIn),
-      ),
-    );
+    _logoScale = Tween<double>(begin: 0.5, end: 1.0).animate(
+        CurvedAnimation(parent: _ctrl, curve: const Interval(0.0, 0.6, curve: Curves.elasticOut)));
+    _logoFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(parent: _ctrl, curve: const Interval(0.0, 0.4, curve: Curves.easeOut)));
+    _textFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(parent: _ctrl, curve: const Interval(0.5, 1.0, curve: Curves.easeOut)));
+    _textSlide = Tween<Offset>(begin: const Offset(0, 0.4), end: Offset.zero).animate(
+        CurvedAnimation(parent: _ctrl, curve: const Interval(0.5, 1.0, curve: Curves.easeOut)));
 
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0, 0.5, curve: Curves.easeOutBack),
-      ),
-    );
+    _ctrl.forward();
+    Future.delayed(const Duration(milliseconds: 2400), _navigate);
+  }
 
-    _controller.forward();
-    _checkAuth();
+  void _navigate() async {
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, '/login');
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _ctrl.dispose();
     super.dispose();
-  }
-
-  Future<void> _checkAuth() async {
-    await Future.delayed(const Duration(seconds: 2));
-    
-    if (!mounted) return;
-
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    await authProvider.initialize();
-
-    if (!mounted) return;
-
-    if (authProvider.isLoggedIn) {
-      // Navigate based on role
-      if (authProvider.isAdmin) {
-        Navigator.pushReplacementNamed(context, '/admin-home');
-      } else if (authProvider.isProvider) {
-        Navigator.pushReplacementNamed(context, '/provider-home');
-      } else {
-        Navigator.pushReplacementNamed(context, '/customer-home');
-      }
-    } else {
-      Navigator.pushReplacementNamed(context, '/login');
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.primaryColor,
-      body: Center(
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            return FadeTransition(
-              opacity: _fadeAnimation,
-              child: ScaleTransition(
-                scale: _scaleAnimation,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Logo Icon
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.handshake,
-                        size: 70,
-                        color: AppTheme.primaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    // App Name
-                    const Text(
-                      'ProConnect',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Tagline
-                    const Text(
-                      'Smart Local Service Provider Platform',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white70,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                    const SizedBox(height: 50),
-                    // Loading Indicator
-                    const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      strokeWidth: 3,
-                    ),
-                  ],
+      backgroundColor: AppTheme.navyDeep,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppTheme.navyDeep, Color(0xFF0D1134), Color(0xFF141830)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Decorative glowing orbs
+            Positioned(top: -60, left: -60,
+              child: _GlowOrb(color: AppTheme.primaryColor, size: 220)),
+            Positioned(bottom: -80, right: -80,
+              child: _GlowOrb(color: AppTheme.accentColor, size: 200)),
+            Positioned(top: 200, right: -40,
+              child: _GlowOrb(color: const Color(0xFF7C3AED), size: 140)),
+
+            // Center content
+            Center(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                // PC Logo
+                FadeTransition(
+                  opacity: _logoFade,
+                  child: ScaleTransition(
+                    scale: _logoScale,
+                    child: const _PCLogo(size: 110),
+                  ),
                 ),
+                const SizedBox(height: 28),
+
+                // App name + tagline
+                FadeTransition(
+                  opacity: _textFade,
+                  child: SlideTransition(
+                    position: _textSlide,
+                    child: Column(children: [
+                      Text(
+                        'ProConnect',
+                        style: GoogleFonts.inter(
+                          fontSize: 34,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Your trusted service network',
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          color: AppTheme.textSecondary,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ]),
+                  ),
+                ),
+              ]),
+            ),
+
+            // Bottom loading dots
+            Positioned(
+              bottom: 60,
+              left: 0, right: 0,
+              child: FadeTransition(
+                opacity: _textFade,
+                child: const Center(child: _LoadingDots()),
               ),
-            );
-          },
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+class _GlowOrb extends StatelessWidget {
+  final Color color;
+  final double size;
+  const _GlowOrb({required this.color, required this.size});
+  @override
+  Widget build(BuildContext context) => Container(
+        width: size, height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(colors: [
+            color.withAlpha(60),
+            color.withAlpha(0),
+          ]),
+        ),
+      );
+}
+
+class _LoadingDots extends StatefulWidget {
+  const _LoadingDots();
+  @override
+  State<_LoadingDots> createState() => _LoadingDotsState();
+}
+
+class _LoadingDotsState extends State<_LoadingDots>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 900))
+      ..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (_, __) {
+        return Row(mainAxisSize: MainAxisSize.min, children: List.generate(3, (i) {
+          final t = (_ctrl.value - i * 0.2).clamp(0.0, 1.0);
+          final opacity = (1 - (t - 0.5).abs() * 2).clamp(0.2, 1.0);
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            width: 8, height: 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppTheme.accentColor.withAlpha((opacity * 255).toInt()),
+            ),
+          );
+        }));
+      },
+    );
+  }
+}
+
+/// Reusable "PC" monogram logo badge — used across all auth screens.
+class _PCLogo extends StatelessWidget {
+  final double size;
+  const _PCLogo({required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size, height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [Color(0xFF6C63FF), Color(0xFF4A42D6)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryColor.withAlpha(100),
+            blurRadius: 30,
+            spreadRadius: 4,
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          'PC',
+          style: GoogleFonts.inter(
+            fontSize: size * 0.36,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+            letterSpacing: 1,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Export the logo for use in other screens.
+class PCLogo extends StatelessWidget {
+  final double size;
+  const PCLogo({super.key, this.size = 70});
+  @override
+  Widget build(BuildContext context) => _PCLogo(size: size);
 }

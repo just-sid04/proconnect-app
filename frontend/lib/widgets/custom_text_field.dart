@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../utils/theme.dart';
 
-class CustomTextField extends StatelessWidget {
+/// Premium dark-theme text field with animated border glow.
+class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
   final String label;
   final String? hint;
@@ -16,6 +18,7 @@ class CustomTextField extends StatelessWidget {
   final void Function(String)? onChanged;
   final void Function()? onTap;
   final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
 
   const CustomTextField({
     super.key,
@@ -33,27 +36,71 @@ class CustomTextField extends StatelessWidget {
     this.onChanged,
     this.onTap,
     this.focusNode,
+    this.textInputAction,
   });
 
   @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  late FocusNode _focusNode;
+  bool _hasFocus = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = widget.focusNode ?? FocusNode();
+    _focusNode.addListener(() {
+      if (mounted) setState(() => _hasFocus = _focusNode.hasFocus);
+    });
+  }
+
+  @override
+  void dispose() {
+    if (widget.focusNode == null) _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      validator: validator,
-      maxLines: maxLines,
-      maxLength: maxLength,
-      enabled: enabled,
-      onChanged: onChanged,
-      onTap: onTap,
-      focusNode: focusNode,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-        suffixIcon: suffixIcon,
-        alignLabelWithHint: maxLines != null && maxLines! > 1,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: _hasFocus
+            ? AppTheme.glowShadow(AppTheme.primaryColor, blur: 12, spread: -2)
+            : [],
+      ),
+      child: TextFormField(
+        controller: widget.controller,
+        obscureText: widget.obscureText,
+        keyboardType: widget.keyboardType,
+        validator: widget.validator,
+        maxLines: widget.maxLines,
+        maxLength: widget.maxLength,
+        enabled: widget.enabled,
+        onChanged: widget.onChanged,
+        onTap: widget.onTap,
+        focusNode: _focusNode,
+        textInputAction: widget.textInputAction,
+        style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 15),
+        decoration: InputDecoration(
+          labelText: widget.label,
+          hintText: widget.hint,
+          prefixIcon: widget.prefixIcon != null
+              ? Icon(widget.prefixIcon,
+                  color: _hasFocus ? AppTheme.primaryColor : AppTheme.textSecondary,
+                  size: 20)
+              : null,
+          suffixIcon: widget.suffixIcon,
+          alignLabelWithHint: widget.maxLines != null && widget.maxLines! > 1,
+          labelStyle: GoogleFonts.inter(
+            color: _hasFocus ? AppTheme.primaryColor : AppTheme.textSecondary,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }

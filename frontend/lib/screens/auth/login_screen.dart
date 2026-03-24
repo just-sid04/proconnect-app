@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/theme.dart';
@@ -7,210 +8,263 @@ import '../../widgets/custom_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  final _emailCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  bool _obscurePass = true;
+  late AnimationController _animCtrl;
+  late Animation<double> _fadeIn;
+
+  @override
+  void initState() {
+    super.initState();
+    _animCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 800));
+    _fadeIn = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
+    _animCtrl.forward();
+  }
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    _animCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
-
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
-    final success = await authProvider.login(
-      _emailController.text.trim(),
-      _passwordController.text,
-    );
-
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final success = await auth.login(_emailCtrl.text.trim(), _passCtrl.text);
     if (!mounted) return;
-
     if (success) {
-      // Navigate based on role
-      if (authProvider.isAdmin) {
-        Navigator.pushReplacementNamed(context, '/admin-home');
-      } else if (authProvider.isProvider) {
-        Navigator.pushReplacementNamed(context, '/provider-home');
-      } else {
-        Navigator.pushReplacementNamed(context, '/customer-home');
-      }
+      if (auth.isAdmin) Navigator.pushReplacementNamed(context, '/admin-home');
+      else if (auth.isProvider) Navigator.pushReplacementNamed(context, '/provider-home');
+      else Navigator.pushReplacementNamed(context, '/customer-home');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.error ?? 'Login failed'),
-          backgroundColor: AppTheme.errorColor,
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(auth.error ?? 'Login failed'),
+        backgroundColor: AppTheme.errorColor,
+      ));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-
+    final auth = Provider.of<AuthProvider>(context);
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 40),
-                // Logo
-                Center(
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: const Icon(
-                      Icons.handshake,
-                      size: 60,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                // Title
-                const Text(
-                  'Welcome Back!',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Sign in to continue',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppTheme.textSecondary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 40),
-                // Email Field
-                CustomTextField(
-                  controller: _emailController,
-                  label: 'Email',
-                  hint: 'Enter your email',
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: Icons.email_outlined,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                // Password Field
-                CustomTextField(
-                  controller: _passwordController,
-                  label: 'Password',
-                  hint: 'Enter your password',
-                  obscureText: _obscurePassword,
-                  prefixIcon: Icons.lock_outlined,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                      color: AppTheme.textSecondary,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 12),
-                // Forgot Password
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (dialogContext) => AlertDialog(
-                          title: const Text('Need help signing in?'),
-                          content: const Text(
-                            'Use one of the seeded demo accounts after starting the backend:\n\n'
-                            'Customer: customer@example.com / customer123\n'
-                            'Provider: provider@example.com / provider123\n'
-                            'Admin: admin@proconnect.com / admin123\n\n'
-                            'If you registered your own account, use those credentials instead.',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(dialogContext),
-                              child: const Text('Close'),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    child: const Text('Forgot Password?'),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                // Login Button
-                CustomButton(
-                  text: 'Sign In',
-                  onPressed: _login,
-                  isLoading: authProvider.isLoading,
-                ),
-                const SizedBox(height: 30),
-                // Register Link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Don\'t have an account?',
-                      style: TextStyle(color: AppTheme.textSecondary),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/role-selection');
-                      },
-                      child: const Text('Sign Up'),
-                    ),
-                  ],
-                ),
-              ],
+      backgroundColor: AppTheme.navyDeep,
+      body: Stack(children: [
+        // Background gradient + orbs
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppTheme.navyDeep, Color(0xFF0D1134), AppTheme.navyMid],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
           ),
         ),
+        Positioned(top: -80, right: -60,
+          child: _Orb(color: AppTheme.primaryColor, size: 200)),
+        Positioned(bottom: -60, left: -60,
+          child: _Orb(color: AppTheme.accentColor, size: 180)),
+
+        // Content
+        SafeArea(
+          child: FadeTransition(
+            opacity: _fadeIn,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 32),
+
+                    // Logo
+                    Center(child: _buildLogo()),
+                    const SizedBox(height: 32),
+
+                    // Title
+                    Text('Welcome Back',
+                        style: GoogleFonts.inter(
+                            fontSize: 30, fontWeight: FontWeight.w800,
+                            color: AppTheme.textPrimary),
+                        textAlign: TextAlign.center),
+                    const SizedBox(height: 8),
+                    Text('Sign in to your ProConnect account',
+                        style: GoogleFonts.inter(
+                            fontSize: 14, color: AppTheme.textSecondary),
+                        textAlign: TextAlign.center),
+
+                    const SizedBox(height: 44),
+
+                    // Form card (glassmorphism)
+                    _GlassCard(
+                      child: Column(children: [
+                        CustomTextField(
+                          controller: _emailCtrl,
+                          label: 'Email address',
+                          hint: 'you@example.com',
+                          keyboardType: TextInputType.emailAddress,
+                          prefixIcon: Icons.email_outlined,
+                          textInputAction: TextInputAction.next,
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return 'Enter your email';
+                            if (!v.contains('@')) return 'Enter a valid email';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        CustomTextField(
+                          controller: _passCtrl,
+                          label: 'Password',
+                          hint: '••••••••',
+                          obscureText: _obscurePass,
+                          prefixIcon: Icons.lock_outline_rounded,
+                          textInputAction: TextInputAction.done,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePass ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                              color: AppTheme.textSecondary, size: 20,
+                            ),
+                            onPressed: () => setState(() => _obscurePass = !_obscurePass),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return 'Enter your password';
+                            if (v.length < 6) return 'At least 6 characters';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 4),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: _showForgotDialog,
+                            child: Text('Forgot password?',
+                                style: GoogleFonts.inter(
+                                    color: AppTheme.accentColor,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500)),
+                          ),
+                        ),
+                      ]),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Sign In button
+                    CustomButton(
+                      text: 'Sign In',
+                      isGold: true,
+                      onPressed: auth.isLoading ? null : _login,
+                      isLoading: auth.isLoading,
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Sign up link
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Text("Don't have an account?",
+                          style: GoogleFonts.inter(color: AppTheme.textSecondary, fontSize: 14)),
+                      TextButton(
+                        onPressed: () => Navigator.pushNamed(context, '/role-selection'),
+                        child: Text('Sign up',
+                            style: GoogleFonts.inter(
+                                color: AppTheme.primaryColor,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14)),
+                      ),
+                    ]),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  Widget _buildLogo() {
+    return Container(
+      width: 80, height: 80,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [AppTheme.primaryColor, AppTheme.primaryDark],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: AppTheme.glowShadow(AppTheme.primaryColor, blur: 24, spread: 2),
+      ),
+      child: Center(
+        child: Text('PC',
+            style: GoogleFonts.inter(
+                fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1)),
       ),
     );
   }
+
+  void _showForgotDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Need help signing in?'),
+        content: Text(
+          'Use a demo account:\n\n'
+          '• Customer: customer@example.com / customer123\n'
+          '• Provider: provider@example.com / provider123\n'
+          '• Admin: admin@proconnect.com / admin123',
+          style: GoogleFonts.inter(fontSize: 13, height: 1.6),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Orb extends StatelessWidget {
+  final Color color;
+  final double size;
+  const _Orb({required this.color, required this.size});
+  @override
+  Widget build(BuildContext context) => Container(
+        width: size, height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(colors: [
+            color.withAlpha(55), color.withAlpha(0),
+          ]),
+        ),
+      );
+}
+
+class _GlassCard extends StatelessWidget {
+  final Widget child;
+  const _GlassCard({required this.child});
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: AppTheme.navySurface,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppTheme.dividerColor, width: 1),
+          boxShadow: AppTheme.cardShadow,
+        ),
+        child: child,
+      );
 }

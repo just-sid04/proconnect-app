@@ -1,17 +1,27 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../models/user_model.dart';
 import '../services/auth_service_supabase.dart';
 import '../utils/constants.dart';
+import 'booking_provider.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthServiceSupabase _authService = AuthServiceSupabase();
-  
+
   User? _user;
   bool _isLoading = false;
   String? _error;
   bool _isInitialized = false;
 
-  // Getters
+  // Supabase auth state subscription
+  StreamSubscription<sb.AuthState>? _authSubscription;
+
+  // Weak reference to BookingProvider for logout cleanup
+  BookingProvider? _bookingProvider;
+
+  // ─── Getters ───────────────────────────────────────────────────────────────
+
   User? get user => _user;
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -21,25 +31,42 @@ class AuthProvider extends ChangeNotifier {
   bool get isProvider => _user?.isProvider ?? false;
   bool get isAdmin => _user?.isAdmin ?? false;
 
-  // Initialize auth state
+  /// Call this once after all providers are created so AuthProvider can
+  /// trigger BookingProvider.reset() on session expiry without creating a
+  /// circular dependency at construction time.
+  void setBookingProvider(BookingProvider bp) {
+    _bookingProvider = bp;
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
+
+  // ─── Initialize ────────────────────────────────────────────────────────────
+
   Future<void> initialize() async {
     if (_isInitialized) return;
-    
+
     _setLoading(true);
-    
+
     try {
-      final isLoggedIn = await _authService.isLoggedIn();
-      
-      if (isLoggedIn) {
+      // Restore existing session
+      final isSignedIn = await _authService.isLoggedIn();
+      if (isSignedIn) {
         final response = await _authService.getCurrentUser();
         if (response.success) {
           _user = response.data;
           _error = null;
         } else {
-          _error = response.message;
           await logout();
         }
       }
+
+      // ── Listen for auth state changes (token refresh / sign-out) ──────────
+      _authSubscription = sb.Supabase.instance.client.auth.onAuthStateChange
+          .listen(_handleAuthStateChange, onError: (_) {});
     } catch (e) {
       _error = ErrorMessages.genericError;
     } finally {
@@ -48,17 +75,52 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // Login
+  void _handleAuthStateChange(sb.AuthState state) {
+    switch (state.event) {
+      case sb.AuthChangeEvent.signedIn:
+        // Session restored or token refreshed — re-fetch profile if needed
+        if (_user == null && state.session != null) {
+          _authService.getCurrentUser().then((r) {
+            if (r.success && r.data != null) {
+              _user = r.data;
+              notifyListeners();
+            }
+          });
+        }
+        break;
+
+      case sb.AuthChangeEvent.tokenRefreshed:
+        // Token silently refreshed — no UI update needed
+        break;
+
+      case sb.AuthChangeEvent.signedOut:
+        // Session expired or signed out from another tab/device
+        if (_user != null) {
+          _bookingProvider?.reset();
+          _user = null;
+          _error = ErrorMessages.unauthorized;
+          notifyListeners();
+        }
+        break;
+
+      case sb.AuthChangeEvent.userUpdated:
+        // Profile changed externally — refresh
+        refreshUser();
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  // ─── Login ─────────────────────────────────────────────────────────────────
+
   Future<bool> login(String email, String password) async {
     _setLoading(true);
     _error = null;
-    
+
     try {
-      final response = await _authService.login(
-        email: email,
-        password: password,
-      );
-      
+      final response = await _authService.login(email: email, password: password);
       if (response.success) {
         _user = response.data;
         _error = null;
@@ -78,7 +140,8 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // Register
+  // ─── Register ──────────────────────────────────────────────────────────────
+
   Future<bool> register({
     required String name,
     required String email,
@@ -89,7 +152,7 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     _setLoading(true);
     _error = null;
-    
+
     try {
       final response = await _authService.register(
         name: name,
@@ -99,7 +162,6 @@ class AuthProvider extends ChangeNotifier {
         phone: phone,
         location: location,
       );
-      
       if (response.success) {
         _user = response.data;
         _error = null;
@@ -119,7 +181,8 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // Update profile
+  // ─── Update Profile ────────────────────────────────────────────────────────
+
   Future<bool> updateProfile({
     String? name,
     String? phone,
@@ -128,7 +191,7 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     _setLoading(true);
     _error = null;
-    
+
     try {
       final response = await _authService.updateProfile(
         name: name,
@@ -136,7 +199,6 @@ class AuthProvider extends ChangeNotifier {
         location: location,
         profilePhoto: profilePhoto,
       );
-      
       if (response.success) {
         _user = response.data;
         _error = null;
@@ -156,17 +218,17 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // Change password
+  // ─── Change Password ───────────────────────────────────────────────────────
+
   Future<bool> changePassword(String currentPassword, String newPassword) async {
     _setLoading(true);
     _error = null;
-    
+
     try {
       final response = await _authService.changePassword(
         currentPassword: currentPassword,
         newPassword: newPassword,
       );
-      
       if (response.success) {
         _error = null;
         notifyListeners();
@@ -185,14 +247,19 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // Logout
-  Future<void> logout() async {
+  // ─── Logout ────────────────────────────────────────────────────────────────
+
+  /// Pass [bookingProvider] to also wipe cached bookings & realtime channels.
+  Future<void> logout({BookingProvider? bookingProvider}) async {
     _setLoading(true);
-    
+
+    // Reset booking state BEFORE signing out so realtime unsubscribes cleanly
+    (bookingProvider ?? _bookingProvider)?.reset();
+
     try {
       await _authService.logout();
-    } catch (e) {
-      // Ignore logout errors
+    } catch (_) {
+      // Ignore logout errors — always clear local state
     } finally {
       _user = null;
       _error = null;
@@ -200,28 +267,28 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // Refresh user data
+  // ─── Refresh ───────────────────────────────────────────────────────────────
+
   Future<void> refreshUser() async {
     if (_user == null) return;
-    
     try {
       final response = await _authService.getCurrentUser();
-      if (response.success) {
+      if (response.success && response.data != null) {
         _user = response.data;
         notifyListeners();
       }
-    } catch (e) {
+    } catch (_) {
       // Ignore refresh errors
     }
   }
 
-  // Clear error
+  // ─── Helpers ───────────────────────────────────────────────────────────────
+
   void clearError() {
     _error = null;
     notifyListeners();
   }
 
-  // Set loading state
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();

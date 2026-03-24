@@ -18,7 +18,7 @@
                     <span>ProConnect</span>
                 </div>
             </div>
-            
+
             <nav class="sidebar-nav">
                 <ul>
                     <li class="active">
@@ -58,6 +58,12 @@
                         </a>
                     </li>
                     <li>
+                        <a href="#earnings" data-page="earnings">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Earnings</span>
+                        </a>
+                    </li>
+                    <li>
                         <a href="#settings" data-page="settings">
                             <i class="fas fa-cog"></i>
                             <span>Settings</span>
@@ -65,7 +71,7 @@
                     </li>
                 </ul>
             </nav>
-            
+
             <div class="sidebar-footer">
                 <a href="#" id="logoutBtn">
                     <i class="fas fa-sign-out-alt"></i>
@@ -81,20 +87,52 @@
                 <button class="menu-toggle" id="menuToggle">
                     <i class="fas fa-bars"></i>
                 </button>
-                
+
                 <div class="search-bar">
                     <i class="fas fa-search"></i>
                     <input type="text" placeholder="Search...">
                 </div>
-                
+
                 <div class="header-actions">
-                    <button class="notification-btn">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge">3</span>
-                    </button>
-                    <div class="user-profile">
-                        <img src="https://via.placeholder.com/40" alt="Admin">
-                        <span>Admin</span>
+                    <!-- Notification Bell -->
+                    <div class="notification-wrapper">
+                        <button class="notification-btn" id="notificationBtn">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge" id="notifBadge" style="display:none;">0</span>
+                        </button>
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="dropdown-header">
+                                <h4>Notifications</h4>
+                                <button onclick="refreshNotifications()" style="background:none;border:none;cursor:pointer;color:#2196F3;font-size:12px;">Refresh</button>
+                            </div>
+                            <div class="notification-list" id="notificationList">
+                                <div class="notif-empty">
+                                    <i class="fas fa-bell-slash"></i>
+                                    <p>No new notifications</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Profile -->
+                    <div class="user-profile-wrapper">
+                        <div class="user-profile" onclick="toggleProfileDropdown(event)">
+                            <div id="adminAvatar"></div>
+                            <span id="adminName">Admin</span>
+                            <i class="fas fa-chevron-down" style="font-size:11px;color:#94a3b8;"></i>
+                        </div>
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <a href="#" onclick="navigateToSettings(event)">
+                                <i class="fas fa-user-circle"></i> View Profile
+                            </a>
+                            <a href="#" onclick="navigateToSettings(event)">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                            <hr style="margin:4px 0;border:none;border-top:1px solid #f1f5f9;">
+                            <a href="#" onclick="handleLogout(event)" style="color:#ef4444;">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -104,54 +142,48 @@
                 <!-- Dashboard Page -->
                 <div id="dashboard-page" class="page active">
                     <div class="page-header">
-                        <h1>Dashboard</h1>
-                        <p>Welcome back, Admin!</p>
+                        <div>
+                            <h1>Dashboard</h1>
+                            <p>Welcome back, <span id="dashAdminName">Admin</span>!</p>
+                        </div>
                     </div>
-                    
+
                     <div class="stats-grid">
                         <div class="stat-card primary">
-                            <div class="stat-icon">
-                                <i class="fas fa-users"></i>
-                            </div>
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
                             <div class="stat-info">
-                                <h3 id="totalUsers">0</h3>
+                                <h3 id="totalUsers">—</h3>
                                 <p>Total Users</p>
                             </div>
                         </div>
                         <div class="stat-card success">
-                            <div class="stat-icon">
-                                <i class="fas fa-user-tie"></i>
-                            </div>
+                            <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
                             <div class="stat-info">
-                                <h3 id="totalProviders">0</h3>
+                                <h3 id="totalProviders">—</h3>
                                 <p>Providers</p>
                             </div>
                         </div>
                         <div class="stat-card warning">
-                            <div class="stat-icon">
-                                <i class="fas fa-calendar-check"></i>
-                            </div>
+                            <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
                             <div class="stat-info">
-                                <h3 id="totalBookings">0</h3>
+                                <h3 id="totalBookings">—</h3>
                                 <p>Bookings</p>
                             </div>
                         </div>
                         <div class="stat-card info">
-                            <div class="stat-icon">
-                                <i class="fas fa-dollar-sign"></i>
-                            </div>
+                            <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
                             <div class="stat-info">
-                                <h3 id="totalRevenue">$0</h3>
+                                <h3 id="totalRevenue">—</h3>
                                 <p>Revenue</p>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="dashboard-grid">
                         <div class="card recent-bookings">
                             <div class="card-header">
                                 <h3>Recent Bookings</h3>
-                                <a href="#bookings" class="view-all">View All</a>
+                                <a href="#bookings" class="view-all" data-page="bookings">View All</a>
                             </div>
                             <div class="card-body">
                                 <table class="data-table">
@@ -164,20 +196,20 @@
                                         </tr>
                                     </thead>
                                     <tbody id="recentBookingsTable">
-                                        <!-- Dynamic content -->
+                                        <tr><td colspan="4" class="empty-cell"><div class="spinner" style="margin:auto;"></div></td></tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-                        
+
                         <div class="card pending-verifications">
                             <div class="card-header">
                                 <h3>Pending Verifications</h3>
-                                <a href="#providers" class="view-all">View All</a>
+                                <a href="#providers" class="view-all" data-page="providers">View All</a>
                             </div>
                             <div class="card-body">
                                 <div id="pendingVerificationsList">
-                                    <!-- Dynamic content -->
+                                    <div style="text-align:center;padding:20px;"><div class="spinner" style="margin:auto;"></div></div>
                                 </div>
                             </div>
                         </div>
@@ -192,11 +224,10 @@
                             <i class="fas fa-plus"></i> Add User
                         </button>
                     </div>
-                    
                     <div class="card">
                         <div class="card-header">
                             <div class="filters">
-                                <input type="text" id="userSearch" placeholder="Search users...">
+                                <input type="text" id="userSearch" placeholder="Search by name...">
                                 <select id="userRoleFilter">
                                     <option value="">All Roles</option>
                                     <option value="customer">Customer</option>
@@ -209,16 +240,12 @@
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>User</th>
-                                        <th>Email</th>
-                                        <th>Role</th>
-                                        <th>Status</th>
-                                        <th>Joined</th>
-                                        <th>Actions</th>
+                                        <th>User</th><th>Email</th><th>Role</th>
+                                        <th>Status</th><th>Joined</th><th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="usersTable">
-                                    <!-- Dynamic content -->
+                                    <tr><td colspan="6" class="empty-cell"><div class="spinner" style="margin:auto;"></div></td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -232,24 +259,21 @@
                         <div class="tabs">
                             <button class="tab-btn active" data-tab="all">All</button>
                             <button class="tab-btn" data-tab="pending">Pending</button>
-                            <button class="tab-btn" data-tab="verified">Verified</button>
+                            <button class="tab-btn" data-tab="approved">Approved</button>
+                            <button class="tab-btn" data-tab="rejected">Rejected</button>
                         </div>
                     </div>
-                    
                     <div class="card">
                         <div class="card-body">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Provider</th>
-                                        <th>Category</th>
-                                        <th>Rating</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
+                                        <th>Provider</th><th>Category</th><th>Rating</th>
+                                        <th>Status</th><th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="providersTable">
-                                    <!-- Dynamic content -->
+                                    <tr><td colspan="5" class="empty-cell"><div class="spinner" style="margin:auto;"></div></td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -271,23 +295,17 @@
                             </select>
                         </div>
                     </div>
-                    
                     <div class="card">
                         <div class="card-body">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Customer</th>
-                                        <th>Provider</th>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                        <th>Amount</th>
-                                        <th>Actions</th>
+                                        <th>ID</th><th>Customer</th><th>Provider</th>
+                                        <th>Date</th><th>Status</th><th>Amount</th><th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="bookingsTable">
-                                    <!-- Dynamic content -->
+                                    <tr><td colspan="7" class="empty-cell"><div class="spinner" style="margin:auto;"></div></td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -302,9 +320,10 @@
                             <i class="fas fa-plus"></i> Add Category
                         </button>
                     </div>
-                    
                     <div class="categories-grid" id="categoriesGrid">
-                        <!-- Dynamic content -->
+                        <div style="text-align:center;padding:40px;grid-column:1/-1;">
+                            <div class="spinner" style="margin:auto;"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -313,22 +332,110 @@
                     <div class="page-header">
                         <h1>Reviews</h1>
                     </div>
-                    
                     <div class="card">
+                        <div class="card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th><th>Provider</th><th>Rating</th>
+                                        <th>Comment</th><th>Date</th><th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reviewsTable">
+                                    <tr><td colspan="6" class="empty-cell"><div class="spinner" style="margin:auto;"></div></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Earnings Page -->
+                <div id="earnings-page" class="page">
+                    <div class="page-header">
+                        <h1>Earnings &amp; Revenue</h1>
+                        <button class="btn btn-secondary" onclick="loadEarningsPage()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+
+                    <!-- Summary Stat Cards -->
+                    <div class="stats-grid" style="margin-bottom:24px;">
+                        <div class="stat-card success">
+                            <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+                            <div class="stat-info">
+                                <h3 id="eTotalProfit">—</h3>
+                                <p>Total Platform Profit</p>
+                            </div>
+                        </div>
+                        <div class="stat-card primary">
+                            <div class="stat-icon"><i class="fas fa-hand-holding-usd"></i></div>
+                            <div class="stat-info">
+                                <h3 id="eTotalGross">—</h3>
+                                <p>Total Gross Revenue</p>
+                            </div>
+                        </div>
+                        <div class="stat-card warning">
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
+                            <div class="stat-info">
+                                <h3 id="eTotalPayouts">—</h3>
+                                <p>Total Provider Payouts</p>
+                            </div>
+                        </div>
+                        <div class="stat-card info">
+                            <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                            <div class="stat-info">
+                                <h3 id="eTotalCompleted">—</h3>
+                                <p>Completed Bookings</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Per-Category Commission & Revenue -->
+                    <div class="card" style="margin-bottom:24px;">
+                        <div class="card-header">
+                            <h3><i class="fas fa-tags" style="margin-right:8px;color:#2196F3;"></i>Revenue by Category — Set Commission Rates</h3>
+                            <span style="font-size:12px;color:#64748b;">Changes save instantly</span>
+                        </div>
+                        <div class="card-body">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Commission %</th>
+                                        <th>Completed Jobs</th>
+                                        <th>Gross Revenue</th>
+                                        <th>Platform Profit</th>
+                                        <th>Provider Payout</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="earningsCategoryTable">
+                                    <tr><td colspan="6" class="empty-cell"><div class="spinner" style="margin:auto;"></div></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Recent Completed Bookings -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-receipt" style="margin-right:8px;color:#4CAF50;"></i>Recent Completed Transactions</h3>
+                        </div>
                         <div class="card-body">
                             <table class="data-table">
                                 <thead>
                                     <tr>
                                         <th>Customer</th>
                                         <th>Provider</th>
-                                        <th>Rating</th>
-                                        <th>Comment</th>
+                                        <th>Category</th>
+                                        <th>Gross</th>
+                                        <th>Commission %</th>
+                                        <th>Platform Cut</th>
+                                        <th>Provider Net</th>
                                         <th>Date</th>
-                                        <th>Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="reviewsTable">
-                                    <!-- Dynamic content -->
+                                <tbody id="earningsTransactionsTable">
+                                    <tr><td colspan="8" class="empty-cell"><div class="spinner" style="margin:auto;"></div></td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -340,25 +447,42 @@
                     <div class="page-header">
                         <h1>Settings</h1>
                     </div>
-                    
                     <div class="settings-grid">
                         <div class="card">
-                            <div class="card-header">
-                                <h3>General Settings</h3>
-                            </div>
+                            <div class="card-header"><h3>Admin Profile</h3></div>
                             <div class="card-body">
-                                <form id="generalSettingsForm">
+                                <div id="adminProfileInfo" style="margin-bottom:20px;"></div>
+                            </div>
+                        </div>
+                        <div class="card" id="settingsFormCard">
+                            <div class="card-header"><h3>Platform Settings</h3></div>
+                            <div class="card-body">
+                                <form id="generalSettingsForm" onsubmit="saveSettingsForm(event)">
                                     <div class="form-group">
                                         <label>Platform Name</label>
-                                        <input type="text" value="ProConnect">
+                                        <input type="text" id="settingPlatformName" value="ProConnect" placeholder="ProConnect">
                                     </div>
                                     <div class="form-group">
                                         <label>Support Email</label>
-                                        <input type="email" value="support@proconnect.com">
+                                        <input type="email" id="settingSupportEmail" value="support@proconnect.com">
                                     </div>
                                     <div class="form-group">
-                                        <label>Commission Rate (%)</label>
-                                        <input type="number" value="10">
+                                        <label>
+                                            Commission Rate —
+                                            <strong id="settingCommissionDisplay" style="color:#2196F3;">10%</strong>
+                                        </label>
+                                        <input
+                                            type="range" id="settingCommissionRate"
+                                            min="0" max="50" step="1" value="10"
+                                            style="width:100%;accent-color:#2196F3;"
+                                            oninput="document.getElementById('settingCommissionDisplay').textContent = this.value + '%'"
+                                        >
+                                        <div style="display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;margin-top:4px;">
+                                            <span>0%</span><span>50%</span>
+                                        </div>
+                                        <p style="font-size:12px;color:#64748b;margin-top:8px;">
+                                            Platform takes this % from each completed booking. Providers see their net earnings after this cut.
+                                        </p>
                                     </div>
                                     <button type="submit" class="btn btn-primary">Save Changes</button>
                                 </form>
@@ -366,29 +490,80 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </main>
     </div>
 
-    <!-- Modals -->
+    <!-- Modal -->
     <div id="modalOverlay" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
                 <h3 id="modalTitle">Modal Title</h3>
-                <button class="modal-close" onclick="closeModal()">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
             </div>
-            <div class="modal-body" id="modalBody">
-                <!-- Dynamic content -->
-            </div>
+            <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
 
     <!-- Toast Notifications -->
     <div id="toastContainer" class="toast-container"></div>
 
+    <!-- Supabase JS CDN (UMD) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="js/supabase-config.js"></script>
     <script src="js/api.js"></script>
     <script src="js/dashboard.js"></script>
+    <script>
+        // View-All link navigation from dashboard
+        document.querySelectorAll('.view-all[data-page]').forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                const pageId = link.getAttribute('data-page');
+                document.querySelectorAll('.sidebar-nav a').forEach(a => {
+                    const match = a.getAttribute('data-page') === pageId;
+                    a.parentElement.classList.toggle('active', match);
+                });
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById(`${pageId}-page`)?.classList.add('active');
+            });
+        });
+
+        // Profile dropdown helpers
+        function navigateToSettings(e) {
+            e.preventDefault();
+            closeAllDropdowns();
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('settings-page')?.classList.add('active');
+            document.querySelectorAll('.sidebar-nav a').forEach(a => {
+                a.parentElement.classList.toggle('active', a.getAttribute('data-page') === 'settings');
+            });
+            // Populate admin info in settings
+            if (currentAdmin) {
+                const infoDiv = document.getElementById('adminProfileInfo');
+                if (infoDiv) infoDiv.innerHTML = `
+                    <div style="display:flex;align-items:center;gap:16px;">
+                        ${getInitialsAvatar(currentAdmin.name, 56)}
+                        <div>
+                            <h3 style="margin:0;">${currentAdmin.name}</h3>
+                            <p style="color:#64748b;font-size:14px;">${currentAdmin.email}</p>
+                            <span class="role-badge admin">admin</span>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        function handleLogout(e) {
+            e.preventDefault();
+            closeAllDropdowns();
+            showConfirm('Logout', 'Are you sure you want to logout?', logoutUser);
+        }
+
+        // Update admin name on dashboard welcome line
+        document.addEventListener('DOMContentLoaded', () => {
+            const dashName = document.getElementById('dashAdminName');
+            if (dashName && currentAdmin) dashName.textContent = currentAdmin.name || 'Admin';
+        });
+    </script>
 </body>
 </html>

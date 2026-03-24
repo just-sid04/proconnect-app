@@ -1,96 +1,108 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/booking_model.dart';
 import '../services/booking_service.dart';
+import '../services/supabase_service.dart';
 import '../utils/constants.dart';
 
 class BookingProvider extends ChangeNotifier {
   final BookingService _bookingService = BookingService();
-  
+
   List<Booking> _bookings = [];
   Booking? _currentBooking;
   bool _isLoading = false;
   String? _error;
-  int _currentPage = 1;
-  bool _hasMore = true;
 
-  // Getters
+  // Cached provider row ID for the logged-in provider user
+  String? _cachedProviderId;
+  String? _lastRole; // tracks the last role so we can re-subscribe if changed
+
+  // Separate realtime channels per role so they don't interfere
+  RealtimeChannel? _customerChannel;
+  RealtimeChannel? _providerChannel;
+
+  @override
+  void dispose() {
+    _customerChannel?.unsubscribe();
+    _providerChannel?.unsubscribe();
+    super.dispose();
+  }
+
+  // ─── Getters ───────────────────────────────────────────────────────────────
+
   List<Booking> get bookings => _bookings;
   Booking? get currentBooking => _currentBooking;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  bool get hasMore => _hasMore;
 
-  // Get bookings by status
-  List<Booking> getBookingsByStatus(String status) {
-    return _bookings.where((b) => b.status == status).toList();
-  }
+  List<Booking> getBookingsByStatus(String status) =>
+      _bookings.where((b) => b.status == status).toList();
 
-  // Get pending bookings
-  List<Booking> get pendingBookings => getBookingsByStatus(AppConstants.statusPending);
+  List<Booking> get pendingBookings =>
+      getBookingsByStatus(AppConstants.statusPending);
 
-  // Get active bookings (accepted + in-progress)
-  List<Booking> get activeBookings => _bookings.where(
-    (b) => b.status == AppConstants.statusAccepted || b.status == AppConstants.statusInProgress
-  ).toList();
+  List<Booking> get activeBookings => _bookings
+      .where((b) =>
+          b.status == AppConstants.statusAccepted ||
+          b.status == AppConstants.statusInProgress)
+      .toList();
 
-  // Get completed bookings
-  List<Booking> get completedBookings => getBookingsByStatus(AppConstants.statusCompleted);
+  List<Booking> get completedBookings =>
+      getBookingsByStatus(AppConstants.statusCompleted);
 
-  // Load bookings
+  List<Booking> get cancelledBookings =>
+      getBookingsByStatus(AppConstants.statusCancelled);
+
+  // ─── Load Bookings ─────────────────────────────────────────────────────────
+
   Future<void> loadBookings({
     String? status,
     String role = 'customer',
     bool refresh = false,
   }) async {
-    if (refresh) {
-      _currentPage = 1;
-      _hasMore = true;
-      _bookings = [];
-    }
-
-    if (_isLoading || !_hasMore) return;
+    // If already loading, skip duplicate calls
+    if (_isLoading) return;
 
     _setLoading(true);
     _error = null;
+
+    // Note: We do NOT clear _bookings here. We only replace them after a
+    // successful fetch. This prevents the UI from flashing empty on reload.
 
     try {
       final response = await _bookingService.getBookings(
         status: status,
         role: role,
-        page: _currentPage,
-        limit: AppConstants.defaultPageSize,
       );
 
       if (response.success) {
-        final newBookings = response.data ?? [];
-        
-        if (refresh) {
-          _bookings = newBookings;
-        } else {
-          _bookings.addAll(newBookings);
-        }
-
-        _hasMore = newBookings.length >= AppConstants.defaultPageSize;
-        _currentPage++;
+        _bookings = response.data ?? [];
         _error = null;
       } else {
+        // Keep existing bookings visible; just surface the error
         _error = response.message;
       }
     } catch (e) {
-      _error = ErrorMessages.genericError;
+      _error = 'Could not load bookings. Please try again.';
     } finally {
       _setLoading(false);
     }
+
+    // Setup realtime subscription (idempotent — only creates if needed)
+    if (_lastRole != role || refresh) {
+      _lastRole = role;
+      await _setupRealtimeForRole(role);
+    }
   }
 
-  // Get booking by ID
+  // ─── CRUD Operations ───────────────────────────────────────────────────────
+
   Future<bool> getBookingById(String id) async {
     _setLoading(true);
     _error = null;
 
     try {
       final response = await _bookingService.getBookingById(id);
-
       if (response.success) {
         _currentBooking = response.data;
         _error = null;
@@ -102,7 +114,7 @@ class BookingProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _error = ErrorMessages.genericError;
+      _error = 'Could not load booking details.';
       notifyListeners();
       return false;
     } finally {
@@ -110,7 +122,6 @@ class BookingProvider extends ChangeNotifier {
     }
   }
 
-  // Create booking
   Future<bool> createBooking({
     required String providerId,
     required String categoryId,
@@ -137,9 +148,12 @@ class BookingProvider extends ChangeNotifier {
       );
 
       if (response.success && response.data != null) {
-        final detailedBooking = await _getDetailedBookingOrFallback(response.data!);
-        _bookings.insert(0, detailedBooking);
-        _currentBooking = detailedBooking;
+        final booking = response.data!;
+        // Insert at top only if not already present (realtime may have added it)
+        if (!_bookings.any((b) => b.id == booking.id)) {
+          _bookings.insert(0, booking);
+        }
+        _currentBooking = booking;
         _error = null;
         notifyListeners();
         return true;
@@ -149,7 +163,7 @@ class BookingProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _error = ErrorMessages.genericError;
+      _error = 'Could not create booking. Please try again.';
       notifyListeners();
       return false;
     } finally {
@@ -157,7 +171,6 @@ class BookingProvider extends ChangeNotifier {
     }
   }
 
-  // Update booking status
   Future<bool> updateBookingStatus({
     required String id,
     required String status,
@@ -174,14 +187,15 @@ class BookingProvider extends ChangeNotifier {
       );
 
       if (response.success && response.data != null) {
-        final detailedBooking = await _getDetailedBookingOrFallback(response.data!);
+        final updated = response.data!;
         final index = _bookings.indexWhere((b) => b.id == id);
         if (index != -1) {
-          _bookings[index] = detailedBooking;
+          _bookings[index] = updated;
+        } else {
+          // Booking wasn't in list yet — add it
+          _bookings.insert(0, updated);
         }
-        if (_currentBooking?.id == id || _currentBooking == null) {
-          _currentBooking = detailedBooking;
-        }
+        if (_currentBooking?.id == id) _currentBooking = updated;
         _error = null;
         notifyListeners();
         return true;
@@ -191,7 +205,7 @@ class BookingProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _error = ErrorMessages.genericError;
+      _error = 'Could not update booking. Please try again.';
       notifyListeners();
       return false;
     } finally {
@@ -199,43 +213,31 @@ class BookingProvider extends ChangeNotifier {
     }
   }
 
-  // Accept booking (provider)
-  Future<bool> acceptBooking(String id) async {
-    return updateBookingStatus(id: id, status: AppConstants.statusAccepted);
-  }
+  Future<bool> acceptBooking(String id) =>
+      updateBookingStatus(id: id, status: AppConstants.statusAccepted);
 
-  // Start booking (provider)
-  Future<bool> startBooking(String id) async {
-    return updateBookingStatus(id: id, status: AppConstants.statusInProgress);
-  }
+  Future<bool> startBooking(String id) =>
+      updateBookingStatus(id: id, status: AppConstants.statusInProgress);
 
-  // Complete booking (provider)
-  Future<bool> completeBooking(String id) async {
-    return updateBookingStatus(id: id, status: AppConstants.statusCompleted);
-  }
+  Future<bool> completeBooking(String id) =>
+      updateBookingStatus(id: id, status: AppConstants.statusCompleted);
 
-  // Cancel booking
-  Future<bool> cancelBooking(String id, {String? reason}) async {
-    return updateBookingStatus(
-      id: id,
-      status: AppConstants.statusCancelled,
-      cancellationReason: reason,
-    );
-  }
+  Future<bool> cancelBooking(String id, {String? reason}) =>
+      updateBookingStatus(
+        id: id,
+        status: AppConstants.statusCancelled,
+        cancellationReason: reason,
+      );
 
-  // Delete booking
   Future<bool> deleteBooking(String id) async {
     _setLoading(true);
     _error = null;
 
     try {
       final response = await _bookingService.deleteBooking(id);
-
       if (response.success) {
         _bookings.removeWhere((b) => b.id == id);
-        if (_currentBooking?.id == id) {
-          _currentBooking = null;
-        }
+        if (_currentBooking?.id == id) _currentBooking = null;
         _error = null;
         notifyListeners();
         return true;
@@ -245,7 +247,7 @@ class BookingProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
-      _error = ErrorMessages.genericError;
+      _error = 'Could not delete booking.';
       notifyListeners();
       return false;
     } finally {
@@ -253,38 +255,151 @@ class BookingProvider extends ChangeNotifier {
     }
   }
 
-  // Clear current booking
   void clearCurrentBooking() {
     _currentBooking = null;
     notifyListeners();
   }
 
-  // Clear error
   void clearError() {
     _error = null;
     notifyListeners();
   }
 
-  // Reset
+  /// Full reset — call this on logout so stale bookings are cleared.
   void reset() {
+    _customerChannel?.unsubscribe();
+    _providerChannel?.unsubscribe();
+    _customerChannel = null;
+    _providerChannel = null;
+    _cachedProviderId = null;
+    _lastRole = null;
     _bookings = [];
     _currentBooking = null;
     _isLoading = false;
     _error = null;
-    _currentPage = 1;
-    _hasMore = true;
     notifyListeners();
-  }
-
-  Future<Booking> _getDetailedBookingOrFallback(Booking fallbackBooking) async {
-    final detailedResponse = await _bookingService.getBookingById(fallbackBooking.id);
-    return detailedResponse.success && detailedResponse.data != null
-        ? detailedResponse.data!
-        : fallbackBooking;
   }
 
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
+  }
+
+  // ─── Realtime ──────────────────────────────────────────────────────────────
+
+  /// Sets up the correct realtime channel for [role], tearing down the other.
+  Future<void> _setupRealtimeForRole(String role) async {
+    if (!AppConstants.useSupabase) return;
+
+    final sb = SupabaseService.instance.client;
+    final userId = sb.auth.currentUser?.id;
+    if (userId == null) return;
+
+    if (role == 'customer') {
+      // Tear down provider channel if active
+      if (_providerChannel != null) {
+        await _providerChannel!.unsubscribe();
+        _providerChannel = null;
+      }
+      // Only create customer channel once
+      if (_customerChannel != null) return;
+
+      _customerChannel = sb
+          .channel('bookings:customer:$userId')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'bookings',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'customer_id',
+              value: userId,
+            ),
+            callback: _handleRealtimeEvent,
+          )
+          .subscribe();
+    } else {
+      // Tear down customer channel if active
+      if (_customerChannel != null) {
+        await _customerChannel!.unsubscribe();
+        _customerChannel = null;
+      }
+      // Only create provider channel once (need provider row ID)
+      if (_providerChannel != null) return;
+
+      // Resolve provider row ID (cache it)
+      _cachedProviderId ??= await _resolveProviderId(userId, sb);
+      final pid = _cachedProviderId;
+      if (pid == null) return; // User has no provider profile yet
+
+      _providerChannel = sb
+          .channel('bookings:provider:$pid')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'bookings',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'provider_id',
+              value: pid,
+            ),
+            callback: _handleRealtimeEvent,
+          )
+          .subscribe();
+    }
+  }
+
+  /// Resolves the service_providers.id for a given auth user.id.
+  Future<String?> _resolveProviderId(String userId, dynamic sb) async {
+    try {
+      final data = await sb
+          .from('service_providers')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (data == null) return null;
+      return (data as Map)['id'] as String?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Handles all Supabase realtime events (INSERT / UPDATE / DELETE).
+  Future<void> _handleRealtimeEvent(PostgresChangePayload payload) async {
+    if (payload.eventType == PostgresChangeEvent.insert) {
+      final newId = payload.newRecord['id'] as String?;
+      if (newId == null) return;
+      // Avoid duplicates
+      if (_bookings.any((b) => b.id == newId)) return;
+
+      // Fetch with full join so we have provider/customer details
+      final res = await _bookingService.getBookingById(newId);
+      if (res.success && res.data != null) {
+        _bookings.insert(0, res.data!);
+        notifyListeners();
+      }
+    } else if (payload.eventType == PostgresChangeEvent.update) {
+      final id = payload.newRecord['id'] as String?;
+      if (id == null) return;
+
+      final res = await _bookingService.getBookingById(id);
+      if (res.success && res.data != null) {
+        final updated = res.data!;
+        final index = _bookings.indexWhere((b) => b.id == id);
+        if (index != -1) {
+          _bookings[index] = updated;
+        } else {
+          _bookings.insert(0, updated);
+        }
+        if (_currentBooking?.id == id) _currentBooking = updated;
+        notifyListeners();
+      }
+    } else if (payload.eventType == PostgresChangeEvent.delete) {
+      final id = payload.oldRecord['id'] as String?;
+      if (id == null) return;
+      _bookings.removeWhere((b) => b.id == id);
+      if (_currentBooking?.id == id) _currentBooking = null;
+      notifyListeners();
+    }
   }
 }

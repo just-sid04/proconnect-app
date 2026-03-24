@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
+import '../../providers/booking_provider.dart';
 import '../../services/api_service.dart';
 import '../../utils/theme.dart';
 import '../auth/login_screen.dart';
@@ -65,7 +66,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   Future<void> _logout() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    await authProvider.logout();
+    final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+    await authProvider.logout(bookingProvider: bookingProvider);
     if (!mounted) return;
 
     Navigator.pushAndRemoveUntil(

@@ -273,39 +273,65 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                 ),
       bottomNavigationBar: provider == null
           ? null
-          : SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: ElevatedButton(
-                  onPressed: authProvider.isCustomer
-                      ? () async {
-                          final created = await Navigator.push<bool>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => BookServiceScreen(provider: provider),
-                            ),
-                          );
-
-                          if (created == true && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Booking request sent successfully.'),
-                                backgroundColor: AppTheme.successColor,
-                              ),
-                            );
-                          }
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ── Verification guard banner ──────────────────────────────
+                if (!provider.isVerified)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    color: Colors.amber.shade100,
+                    child: Row(
+                      children: const [
+                        Icon(Icons.warning_amber_rounded,
+                            color: Colors.amber, size: 18),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'This provider is pending verification. Booking is currently unavailable.',
+                            style: TextStyle(fontSize: 12, color: Colors.black87),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Text(
-                    authProvider.isCustomer
-                        ? 'Book Now'
-                        : 'Only customers can book services',
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ElevatedButton(
+                      onPressed: authProvider.isCustomer && provider.isVerified
+                          ? () async {
+                              final created = await Navigator.push<bool>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => BookServiceScreen(provider: provider),
+                                ),
+                              );
+                              if (created == true && context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Booking request sent successfully.'),
+                                    backgroundColor: AppTheme.successColor,
+                                  ),
+                                );
+                              }
+                            }
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: Text(
+                        !provider.isVerified
+                            ? 'Provider Not Verified'
+                            : authProvider.isCustomer
+                                ? 'Book Now'
+                                : 'Only customers can book services',
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
     );
   }

@@ -1,19 +1,28 @@
 import 'package:flutter/foundation.dart';
 
 class AppConstants {
-  // Supabase Configuration (required for Supabase integration)
+  // Supabase Configuration
+  // The dart-define values override these at build time.
+  // Fallback values are hardcoded so `flutter build apk` works without --dart-define.
+  // The anon key is a publishable key — it is safe to embed; security is enforced by RLS.
+  static const String _supabaseUrlFallback =
+      'https://mhhywdmgkagbephtnjqd.supabase.co';
+  static const String _supabaseAnonKeyFallback =
+      'sb_publishable_IXOINzIKDPdms23vaVeK5A_PmvfRQ9c';
+
   static String get supabaseUrl {
     const url = String.fromEnvironment('SUPABASE_URL', defaultValue: '');
-    return url;
+    return url.isNotEmpty ? url : _supabaseUrlFallback;
   }
 
   static String get supabaseAnonKey {
     const key = String.fromEnvironment('SUPABASE_ANON_KEY', defaultValue: '');
-    return key;
+    return key.isNotEmpty ? key : _supabaseAnonKeyFallback;
   }
 
-  static bool get useSupabase =>
-      supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+  /// Always true — Supabase is the only backend. Node.js REST fallback is removed.
+  static bool get useSupabase => true;
+
 
   // API Configuration (used when Supabase is not configured - legacy backend)
   static String get baseUrl {

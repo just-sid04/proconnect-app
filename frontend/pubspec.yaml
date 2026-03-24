@@ -47,6 +47,9 @@ dependencies:
   # Supabase
   supabase_flutter: ^2.8.0
 
+  # Typography
+  google_fonts: ^6.1.0
+
   # Utilities
   uuid: ^4.2.2
   path_provider: ^2.1.1
