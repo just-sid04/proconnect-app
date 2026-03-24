@@ -1,0 +1,202 @@
+{
+  "bookings": [
+    {
+      "id": "booking-001",
+      "customerId": "user-001",
+      "providerId": "provider-001",
+      "categoryId": "cat-001",
+      "status": "completed",
+      "description": "Need to fix flickering lights in the kitchen and install a new ceiling fan in the living room.",
+      "serviceLocation": {
+        "address": "123 Main Street, Apt 4B",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001",
+        "latitude": 40.7128,
+        "longitude": -74.006
+      },
+      "scheduledDate": "2024-01-20",
+      "scheduledTime": "10:00",
+      "estimatedDuration": 3,
+      "price": {
+        "hourlyRate": 75,
+        "estimatedHours": 3,
+        "totalAmount": 225,
+        "materialsCost": 50
+      },
+      "notes": "Customer has the ceiling fan purchased already.",
+      "createdAt": "2024-01-18T14:30:00Z",
+      "updatedAt": "2024-01-20T14:00:00Z",
+      "acceptedAt": "2024-01-18T16:00:00Z",
+      "startedAt": "2024-01-20T10:00:00Z",
+      "completedAt": "2024-01-20T13:30:00Z",
+      "cancelledAt": null,
+      "cancellationReason": null
+    },
+    {
+      "id": "booking-002",
+      "customerId": "user-001",
+      "providerId": "provider-002",
+      "categoryId": "cat-002",
+      "status": "in-progress",
+      "description": "Kitchen sink is clogged and leaking. Need urgent repair.",
+      "serviceLocation": {
+        "address": "123 Main Street, Apt 4B",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10001",
+        "latitude": 40.7128,
+        "longitude": -74.006
+      },
+      "scheduledDate": "2024-01-25",
+      "scheduledTime": "09:00",
+      "estimatedDuration": 2,
+      "price": {
+        "hourlyRate": 85,
+        "estimatedHours": 2,
+        "totalAmount": 170,
+        "materialsCost": 0
+      },
+      "notes": "Emergency repair needed.",
+      "createdAt": "2024-01-24T08:00:00Z",
+      "updatedAt": "2024-01-25T09:30:00Z",
+      "acceptedAt": "2024-01-24T10:00:00Z",
+      "startedAt": "2024-01-25T09:00:00Z",
+      "completedAt": null,
+      "cancelledAt": null,
+      "cancellationReason": null
+    },
+    {
+      "id": "booking-003",
+      "customerId": "user-007",
+      "providerId": "provider-003",
+      "categoryId": "cat-004",
+      "status": "pending",
+      "description": "Laptop running very slow, suspect virus infection. Need cleanup and optimization.",
+      "serviceLocation": {
+        "address": "789 College Ave",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10003",
+        "latitude": 40.7308,
+        "longitude": -73.9973
+      },
+      "scheduledDate": "2024-01-28",
+      "scheduledTime": "16:00",
+      "estimatedDuration": 2,
+      "price": {
+        "hourlyRate": 50,
+        "estimatedHours": 2,
+        "totalAmount": 100,
+        "materialsCost": 0
+      },
+      "notes": "Windows 11 laptop, Dell Inspiron.",
+      "createdAt": "2024-01-26T11:00:00Z",
+      "updatedAt": "2024-01-26T11:00:00Z",
+      "acceptedAt": null,
+      "startedAt": null,
+      "completedAt": null,
+      "cancelledAt": null,
+      "cancellationReason": null
+    },
+    {
+      "id": "booking-004",
+      "customerId": "user-008",
+      "providerId": "provider-004",
+      "categoryId": "cat-006",
+      "status": "accepted",
+      "description": "Need help preparing for SAT math section. Looking for weekly sessions.",
+      "serviceLocation": {
+        "address": "321 Student Housing",
+        "city": "New York",
+        "state": "NY",
+        "zipCode": "10004",
+        "latitude": 40.7084,
+        "longitude": -74.0175
+      },
+      "scheduledDate": "2024-01-27",
+      "scheduledTime": "15:00",
+      "estimatedDuration": 2,
+      "price": {
+        "hourlyRate": 35,
+        "estimatedHours": 2,
+        "totalAmount": 70,
+        "materialsCost": 0
+      },
+      "notes": "First session, will discuss ongoing tutoring needs.",
+      "createdAt": "2024-01-23T09:00:00Z",
+      "updatedAt": "2024-01-24T14:00:00Z",
+      "acceptedAt": "2024-01-24T14:00:00Z",
+      "startedAt": null,
+      "completedAt": null,
+      "cancelledAt": null,
+      "cancellationReason": null
+    },
+    {
+      "id": "booking-mmuip8kb-m3758",
+      "customerId": "user-mmuio1f3-av7az",
+      "providerId": "provider-001",
+      "categoryId": "cat-001",
+      "status": "pending",
+      "description": "fan repair",
+      "serviceLocation": {
+        "address": "23 sakri",
+        "city": "sakri",
+        "state": "",
+        "zipCode": "",
+        "latitude": null,
+        "longitude": null
+      },
+      "scheduledDate": "2026-03-18",
+      "scheduledTime": "16:46",
+      "estimatedDuration": 2,
+      "price": {
+        "hourlyRate": 75,
+        "estimatedHours": 2,
+        "totalAmount": 150,
+        "materialsCost": 0
+      },
+      "notes": "",
+      "createdAt": "2026-03-17T11:16:57.371Z",
+      "updatedAt": "2026-03-17T11:16:57.371Z",
+      "acceptedAt": null,
+      "startedAt": null,
+      "completedAt": null,
+      "cancelledAt": null,
+      "cancellationReason": null
+    },
+    {
+      "id": "booking-mn3d1quz-zylp0",
+      "customerId": "user-mn3d0i73-6xtx5",
+      "providerId": "provider-mn3cxfww-iyqct",
+      "categoryId": "cat-001",
+      "status": "completed",
+      "description": "fan repair",
+      "serviceLocation": {
+        "address": "pune",
+        "city": "pune",
+        "state": "",
+        "zipCode": "",
+        "latitude": null,
+        "longitude": null
+      },
+      "scheduledDate": "2026-03-24",
+      "scheduledTime": "21:18",
+      "estimatedDuration": 2,
+      "price": {
+        "hourlyRate": 40,
+        "estimatedHours": 2,
+        "totalAmount": 80,
+        "materialsCost": 0
+      },
+      "notes": "",
+      "createdAt": "2026-03-23T15:48:38.844Z",
+      "updatedAt": "2026-03-23T15:53:49.434Z",
+      "acceptedAt": "2026-03-23T15:49:52.257Z",
+      "startedAt": "2026-03-23T15:53:42.554Z",
+      "completedAt": "2026-03-23T15:53:49.434Z",
+      "cancelledAt": null,
+      "cancellationReason": null
+    }
+  ]
+}

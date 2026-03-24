@@ -1,0 +1,164 @@
+{
+  "categories": [
+    {
+      "id": "cat-001",
+      "name": "Electrical Repair",
+      "description": "Professional electrical services for homes and businesses including wiring, repairs, installations, and safety inspections.",
+      "icon": "electrical",
+      "color": "#FFC107",
+      "services": [
+        "Electrical Wiring",
+        "Circuit Repair",
+        "Lighting Installation",
+        "Panel Upgrades",
+        "Outlet Installation",
+        "Electrical Inspections",
+        "Emergency Repairs"
+      ],
+      "averageRate": 65,
+      "totalProviders": 12,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "cat-002",
+      "name": "Plumbing",
+      "description": "Expert plumbing services including repairs, installations, maintenance, and emergency plumbing solutions.",
+      "icon": "plumbing",
+      "color": "#2196F3",
+      "services": [
+        "Pipe Repair",
+        "Drain Cleaning",
+        "Water Heater Installation",
+        "Leak Detection",
+        "Toilet Repair",
+        "Faucet Installation",
+        "Sewer Line Services"
+      ],
+      "averageRate": 75,
+      "totalProviders": 15,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "cat-003",
+      "name": "Appliance Repair",
+      "description": "Reliable repair services for all major home appliances including refrigerators, washers, dryers, and more.",
+      "icon": "appliance",
+      "color": "#4CAF50",
+      "services": [
+        "Refrigerator Repair",
+        "Washing Machine Repair",
+        "Dryer Repair",
+        "Dishwasher Repair",
+        "Oven/Stove Repair",
+        "Microwave Repair",
+        "HVAC Services"
+      ],
+      "averageRate": 80,
+      "totalProviders": 10,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "cat-004",
+      "name": "Computer Services",
+      "description": "Technical support and repair services for computers, laptops, networks, and software issues.",
+      "icon": "computer",
+      "color": "#9C27B0",
+      "services": [
+        "Computer Repair",
+        "Virus Removal",
+        "Data Recovery",
+        "Network Setup",
+        "Software Installation",
+        "Hardware Upgrades",
+        "IT Support"
+      ],
+      "averageRate": 55,
+      "totalProviders": 18,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "cat-005",
+      "name": "Home Maintenance",
+      "description": "Comprehensive home maintenance services including cleaning, painting, carpentry, and general repairs.",
+      "icon": "maintenance",
+      "color": "#FF5722",
+      "services": [
+        "House Cleaning",
+        "Painting",
+        "Carpentry",
+        "Furniture Assembly",
+        "Drywall Repair",
+        "Gutter Cleaning",
+        "Pressure Washing"
+      ],
+      "averageRate": 45,
+      "totalProviders": 22,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "cat-006",
+      "name": "Tutoring",
+      "description": "Educational support and tutoring services for students of all ages in various subjects and test preparation.",
+      "icon": "tutoring",
+      "color": "#673AB7",
+      "services": [
+        "Mathematics",
+        "Science",
+        "English",
+        "Test Preparation",
+        "Computer Science",
+        "Languages",
+        "Music Lessons"
+      ],
+      "averageRate": 40,
+      "totalProviders": 25,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "cat-007",
+      "name": "Beauty & Wellness",
+      "description": "Personal care services including hair styling, makeup, massage therapy, and wellness treatments.",
+      "icon": "beauty",
+      "color": "#E91E63",
+      "services": [
+        "Hair Styling",
+        "Makeup",
+        "Massage Therapy",
+        "Nail Services",
+        "Skincare",
+        "Personal Training",
+        "Yoga Instruction"
+      ],
+      "averageRate": 60,
+      "totalProviders": 14,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "cat-008",
+      "name": "Automotive",
+      "description": "Vehicle maintenance and repair services including diagnostics, oil changes, and mobile mechanic services.",
+      "icon": "automotive",
+      "color": "#607D8B",
+      "services": [
+        "Oil Change",
+        "Brake Service",
+        "Diagnostics",
+        "Battery Replacement",
+        "Tire Services",
+        "Mobile Mechanic",
+        "Detailing"
+      ],
+      "averageRate": 70,
+      "totalProviders": 8,
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}

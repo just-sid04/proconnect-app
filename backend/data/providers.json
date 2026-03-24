@@ -1,0 +1,311 @@
+{
+  "providers": [
+    {
+      "id": "provider-001",
+      "userId": "user-002",
+      "categoryId": "cat-001",
+      "skills": [
+        "Electrical Wiring",
+        "Circuit Repair",
+        "Lighting Installation",
+        "Panel Upgrades"
+      ],
+      "experience": 5,
+      "hourlyRate": 75,
+      "description": "Licensed electrician with 5+ years of experience in residential and commercial electrical work. Specializing in repairs, installations, and safety inspections.",
+      "availability": {
+        "monday": {
+          "available": true,
+          "startTime": "08:00",
+          "endTime": "18:00"
+        },
+        "tuesday": {
+          "available": true,
+          "startTime": "08:00",
+          "endTime": "18:00"
+        },
+        "wednesday": {
+          "available": true,
+          "startTime": "08:00",
+          "endTime": "18:00"
+        },
+        "thursday": {
+          "available": true,
+          "startTime": "08:00",
+          "endTime": "18:00"
+        },
+        "friday": {
+          "available": true,
+          "startTime": "08:00",
+          "endTime": "18:00"
+        },
+        "saturday": {
+          "available": true,
+          "startTime": "09:00",
+          "endTime": "15:00"
+        },
+        "sunday": {
+          "available": false,
+          "startTime": "",
+          "endTime": ""
+        }
+      },
+      "serviceArea": 25,
+      "isVerified": true,
+      "verificationStatus": "approved",
+      "rating": 4.8,
+      "totalReviews": 24,
+      "totalBookings": 45,
+      "portfolio": [],
+      "documents": [],
+      "createdAt": "2024-01-15T11:00:00Z",
+      "updatedAt": "2024-01-15T11:00:00Z"
+    },
+    {
+      "id": "provider-002",
+      "userId": "user-004",
+      "categoryId": "cat-002",
+      "skills": [
+        "Pipe Repair",
+        "Drain Cleaning",
+        "Water Heater Installation",
+        "Leak Detection"
+      ],
+      "experience": 8,
+      "hourlyRate": 85,
+      "description": "Professional plumber with expertise in all types of plumbing services. Fast, reliable, and affordable solutions for your home or business.",
+      "availability": {
+        "monday": {
+          "available": true,
+          "startTime": "07:00",
+          "endTime": "19:00"
+        },
+        "tuesday": {
+          "available": true,
+          "startTime": "07:00",
+          "endTime": "19:00"
+        },
+        "wednesday": {
+          "available": true,
+          "startTime": "07:00",
+          "endTime": "19:00"
+        },
+        "thursday": {
+          "available": true,
+          "startTime": "07:00",
+          "endTime": "19:00"
+        },
+        "friday": {
+          "available": true,
+          "startTime": "07:00",
+          "endTime": "19:00"
+        },
+        "saturday": {
+          "available": true,
+          "startTime": "08:00",
+          "endTime": "16:00"
+        },
+        "sunday": {
+          "available": true,
+          "startTime": "10:00",
+          "endTime": "14:00"
+        }
+      },
+      "serviceArea": 30,
+      "isVerified": true,
+      "verificationStatus": "approved",
+      "rating": 4.9,
+      "totalReviews": 36,
+      "totalBookings": 62,
+      "portfolio": [],
+      "documents": [],
+      "createdAt": "2024-01-16T09:00:00Z",
+      "updatedAt": "2024-01-16T09:00:00Z"
+    },
+    {
+      "id": "provider-003",
+      "userId": "user-005",
+      "categoryId": "cat-004",
+      "skills": [
+        "Computer Repair",
+        "Virus Removal",
+        "Data Recovery",
+        "Network Setup",
+        "Software Installation"
+      ],
+      "experience": 3,
+      "hourlyRate": 50,
+      "description": "Computer science student offering affordable tech support. Hardware repairs, software troubleshooting, and network configuration.",
+      "availability": {
+        "monday": {
+          "available": true,
+          "startTime": "16:00",
+          "endTime": "21:00"
+        },
+        "tuesday": {
+          "available": true,
+          "startTime": "16:00",
+          "endTime": "21:00"
+        },
+        "wednesday": {
+          "available": true,
+          "startTime": "16:00",
+          "endTime": "21:00"
+        },
+        "thursday": {
+          "available": true,
+          "startTime": "16:00",
+          "endTime": "21:00"
+        },
+        "friday": {
+          "available": true,
+          "startTime": "16:00",
+          "endTime": "22:00"
+        },
+        "saturday": {
+          "available": true,
+          "startTime": "09:00",
+          "endTime": "20:00"
+        },
+        "sunday": {
+          "available": true,
+          "startTime": "10:00",
+          "endTime": "18:00"
+        }
+      },
+      "serviceArea": 15,
+      "isVerified": true,
+      "verificationStatus": "approved",
+      "rating": 4.5,
+      "totalReviews": 8,
+      "totalBookings": 15,
+      "portfolio": [],
+      "documents": [],
+      "createdAt": "2024-01-18T14:00:00Z",
+      "updatedAt": "2026-03-23T13:55:50.377Z",
+      "verificationNotes": "",
+      "verifiedAt": "2026-03-23T13:55:50.376Z"
+    },
+    {
+      "id": "provider-004",
+      "userId": "user-006",
+      "categoryId": "cat-006",
+      "skills": [
+        "Mathematics",
+        "Physics",
+        "Chemistry",
+        "Test Preparation"
+      ],
+      "experience": 2,
+      "hourlyRate": 35,
+      "description": "Engineering student offering tutoring services in STEM subjects. Patient teaching style with proven results.",
+      "availability": {
+        "monday": {
+          "available": true,
+          "startTime": "15:00",
+          "endTime": "20:00"
+        },
+        "tuesday": {
+          "available": true,
+          "startTime": "15:00",
+          "endTime": "20:00"
+        },
+        "wednesday": {
+          "available": true,
+          "startTime": "15:00",
+          "endTime": "20:00"
+        },
+        "thursday": {
+          "available": true,
+          "startTime": "15:00",
+          "endTime": "20:00"
+        },
+        "friday": {
+          "available": false,
+          "startTime": "",
+          "endTime": ""
+        },
+        "saturday": {
+          "available": true,
+          "startTime": "10:00",
+          "endTime": "18:00"
+        },
+        "sunday": {
+          "available": true,
+          "startTime": "12:00",
+          "endTime": "17:00"
+        }
+      },
+      "serviceArea": 20,
+      "isVerified": true,
+      "verificationStatus": "approved",
+      "rating": 4.7,
+      "totalReviews": 12,
+      "totalBookings": 28,
+      "portfolio": [],
+      "documents": [],
+      "createdAt": "2024-01-20T10:00:00Z",
+      "updatedAt": "2024-01-20T10:00:00Z"
+    },
+    {
+      "id": "provider-mn3cxfww-iyqct",
+      "userId": "user-mmui3wr9-i9802",
+      "categoryId": "cat-001",
+      "skills": [
+        "electri repair"
+      ],
+      "experience": 10,
+      "hourlyRate": 40,
+      "description": "asdfghjkqwertyuidfghjkshjdjciuiudncoijfajfoiamoiamcoimoim coi moicm oimdsimvsoivmdsoivmdsovidsmvoismvoi",
+      "availability": {
+        "monday": {
+          "available": true,
+          "startTime": "09:00",
+          "endTime": "17:00"
+        },
+        "tuesday": {
+          "available": false,
+          "startTime": "09:00",
+          "endTime": "17:00"
+        },
+        "wednesday": {
+          "available": false,
+          "startTime": "09:00",
+          "endTime": "17:00"
+        },
+        "thursday": {
+          "available": false,
+          "startTime": "09:00",
+          "endTime": "17:00"
+        },
+        "friday": {
+          "available": false,
+          "startTime": "09:00",
+          "endTime": "17:00"
+        },
+        "saturday": {
+          "available": true,
+          "startTime": "09:00",
+          "endTime": "17:00"
+        },
+        "sunday": {
+          "available": true,
+          "startTime": "09:00",
+          "endTime": "17:00"
+        }
+      },
+      "serviceArea": 10,
+      "isVerified": true,
+      "verificationStatus": "approved",
+      "rating": 0,
+      "totalReviews": 0,
+      "totalBookings": 1,
+      "portfolio": [],
+      "documents": [],
+      "createdAt": "2026-03-23T15:45:18.032Z",
+      "updatedAt": "2026-03-23T15:46:30.448Z",
+      "verificationNotes": "",
+      "verifiedAt": "2026-03-23T15:45:49.879Z"
+    }
+  ]
+}

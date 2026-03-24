@@ -1,0 +1,54 @@
+{
+  "reviews": [
+    {
+      "id": "review-001",
+      "bookingId": "booking-001",
+      "customerId": "user-001",
+      "providerId": "provider-001",
+      "rating": 5,
+      "comment": "Excellent service! Mike arrived on time, was very professional, and did a fantastic job with the electrical work. The ceiling fan installation looks perfect and the flickering lights are fixed. Highly recommend!",
+      "createdAt": "2024-01-21T10:00:00Z",
+      "updatedAt": "2024-01-21T10:00:00Z"
+    },
+    {
+      "id": "review-002",
+      "bookingId": "booking-005",
+      "customerId": "user-009",
+      "providerId": "provider-001",
+      "rating": 4,
+      "comment": "Good work overall. Fixed the outlet issue quickly. Only minor complaint is he arrived 15 minutes late.",
+      "createdAt": "2024-01-15T16:00:00Z",
+      "updatedAt": "2024-01-15T16:00:00Z"
+    },
+    {
+      "id": "review-003",
+      "bookingId": "booking-006",
+      "customerId": "user-010",
+      "providerId": "provider-002",
+      "rating": 5,
+      "comment": "Saved us from a major leak! Came within an hour of calling and fixed everything. Very reasonable pricing too.",
+      "createdAt": "2024-01-10T14:00:00Z",
+      "updatedAt": "2024-01-10T14:00:00Z"
+    },
+    {
+      "id": "review-004",
+      "bookingId": "booking-007",
+      "customerId": "user-011",
+      "providerId": "provider-003",
+      "rating": 4,
+      "comment": "Great service from this student technician. Fixed my laptop and explained everything clearly. Will use again.",
+      "createdAt": "2024-01-12T18:00:00Z",
+      "updatedAt": "2024-01-12T18:00:00Z"
+    },
+    {
+      "id": "review-005",
+      "bookingId": "booking-008",
+      "customerId": "user-012",
+      "providerId": "provider-004",
+      "rating": 5,
+      "comment": "Amazing tutor! My daughter's math grades improved significantly after just a month of sessions. Patient and knowledgeable.",
+      "createdAt": "2024-01-08T20:00:00Z",
+      "updatedAt": "2024-01-08T20:00:00Z"
+    }
+  ]
+}
