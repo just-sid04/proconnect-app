@@ -26,7 +26,8 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
   }
 
   Future<void> _loadProvider() async {
-    final providerProvider = Provider.of<ProviderProvider>(context, listen: false);
+    final providerProvider =
+        Provider.of<ProviderProvider>(context, listen: false);
     final reviewProvider = Provider.of<ReviewProvider>(context, listen: false);
 
     await Future.wait([
@@ -62,9 +63,10 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                             child: Center(
                               child: CircleAvatar(
                                 radius: 64,
-                                backgroundImage: provider.profileImage.isNotEmpty
-                                    ? NetworkImage(provider.profileImage)
-                                    : null,
+                                backgroundImage:
+                                    provider.profileImage.isNotEmpty
+                                        ? NetworkImage(provider.profileImage)
+                                        : null,
                                 child: provider.profileImage.isEmpty
                                     ? const Icon(Icons.person, size: 64)
                                     : null,
@@ -97,7 +99,8 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                                         vertical: 6,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: AppTheme.primaryColor.withOpacity(0.1),
+                                        color: AppTheme.primaryColor
+                                            .withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: const Row(
@@ -135,7 +138,8 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                                   _StatCard(
                                     icon: Icons.star,
                                     value: summary != null
-                                        ? summary.averageRating.toStringAsFixed(1)
+                                        ? summary.averageRating
+                                            .toStringAsFixed(1)
                                         : provider.rating.toStringAsFixed(1),
                                     label: 'Rating',
                                     color: AppTheme.accentColor,
@@ -143,7 +147,8 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                                   const SizedBox(width: 12),
                                   _StatCard(
                                     icon: Icons.reviews,
-                                    value: '${summary?.totalReviews ?? provider.totalReviews}',
+                                    value:
+                                        '${summary?.totalReviews ?? provider.totalReviews}',
                                     label: 'Reviews',
                                     color: AppTheme.infoColor,
                                   ),
@@ -159,9 +164,12 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                               const SizedBox(height: 24),
                               Card(
                                 child: ListTile(
-                                  leading: const Icon(Icons.attach_money, color: AppTheme.primaryColor),
-                                  title: Text('\$${provider.hourlyRate.toStringAsFixed(2)} / hour'),
-                                  subtitle: Text('${provider.experience} years experience'),
+                                  leading: const Icon(Icons.attach_money,
+                                      color: AppTheme.primaryColor),
+                                  title: Text(
+                                      '\$${provider.hourlyRate.toStringAsFixed(2)} / hour'),
+                                  subtitle: Text(
+                                      '${provider.experience} years experience'),
                                 ),
                               ),
                               const SizedBox(height: 24),
@@ -181,8 +189,10 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                                     .map(
                                       (skill) => Chip(
                                         label: Text(skill),
-                                        backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                                        labelStyle: const TextStyle(color: AppTheme.primaryColor),
+                                        backgroundColor: AppTheme.primaryColor
+                                            .withOpacity(0.1),
+                                        labelStyle: const TextStyle(
+                                            color: AppTheme.primaryColor),
                                       ),
                                     )
                                     .toList(),
@@ -191,7 +201,8 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                               const _SectionTitle('Availability'),
                               Card(
                                 child: Column(
-                                  children: _availabilityRows(provider.availability),
+                                  children:
+                                      _availabilityRows(provider.availability),
                                 ),
                               ),
                               const SizedBox(height: 24),
@@ -201,13 +212,16 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                                     child: _SectionTitle('Reviews'),
                                   ),
                                   TextButton(
-                                    onPressed: () => _showAllReviews(reviewProvider),
+                                    onPressed: () =>
+                                        _showAllReviews(reviewProvider),
                                     child: const Text('See All'),
                                   ),
                                 ],
                               ),
-                              if (reviewProvider.isLoading && reviewProvider.reviews.isEmpty)
-                                const Center(child: Padding(
+                              if (reviewProvider.isLoading &&
+                                  reviewProvider.reviews.isEmpty)
+                                const Center(
+                                    child: Padding(
                                   padding: EdgeInsets.all(16),
                                   child: CircularProgressIndicator(),
                                 ))
@@ -220,49 +234,59 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                                 )
                               else
                                 ...reviewProvider.reviews.take(3).map(
-                                  (review) => Card(
-                                    child: ListTile(
-                                      leading: CircleAvatar(
-                                        backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                                        child: Text(
-                                          (review.customer?.name.isNotEmpty ?? false)
-                                              ? review.customer!.name[0].toUpperCase()
-                                              : 'U',
-                                          style: const TextStyle(color: AppTheme.primaryColor),
+                                      (review) => Card(
+                                        child: ListTile(
+                                          leading: CircleAvatar(
+                                            backgroundColor: AppTheme
+                                                .primaryColor
+                                                .withOpacity(0.1),
+                                            child: Text(
+                                              (review.customer?.name
+                                                          .isNotEmpty ??
+                                                      false)
+                                                  ? review.customer!.name[0]
+                                                      .toUpperCase()
+                                                  : 'U',
+                                              style: const TextStyle(
+                                                  color: AppTheme.primaryColor),
+                                            ),
+                                          ),
+                                          title: Text(review.customer?.name ??
+                                              'Customer'),
+                                          subtitle: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: List.generate(
+                                                  5,
+                                                  (index) => Icon(
+                                                    index < review.rating
+                                                        ? Icons.star
+                                                        : Icons.star_border,
+                                                    size: 16,
+                                                    color: AppTheme.accentColor,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Text(review.comment.isNotEmpty
+                                                  ? review.comment
+                                                  : 'No comment'),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                review.timeAgo,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: AppTheme.textSecondary,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                      title: Text(review.customer?.name ?? 'Customer'),
-                                      subtitle: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            children: List.generate(
-                                              5,
-                                              (index) => Icon(
-                                                index < review.rating
-                                                    ? Icons.star
-                                                    : Icons.star_border,
-                                                size: 16,
-                                                color: AppTheme.accentColor,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Text(review.comment.isNotEmpty ? review.comment : 'No comment'),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            review.timeAgo,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: AppTheme.textSecondary,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
                                     ),
-                                  ),
-                                ),
                               const SizedBox(height: 100),
                             ],
                           ),
@@ -280,17 +304,19 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                 if (!provider.isVerified)
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
                     color: Colors.amber.shade100,
-                    child: Row(
-                      children: const [
+                    child: const Row(
+                      children: [
                         Icon(Icons.warning_amber_rounded,
                             color: Colors.amber, size: 18),
                         SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'This provider is pending verification. Booking is currently unavailable.',
-                            style: TextStyle(fontSize: 12, color: Colors.black87),
+                            style:
+                                TextStyle(fontSize: 12, color: Colors.black87),
                           ),
                         ),
                       ],
@@ -305,13 +331,15 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                               final created = await Navigator.push<bool>(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => BookServiceScreen(provider: provider),
+                                  builder: (_) =>
+                                      BookServiceScreen(provider: provider),
                                 ),
                               );
                               if (created == true && context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Booking request sent successfully.'),
+                                    content: Text(
+                                        'Booking request sent successfully.'),
                                     backgroundColor: AppTheme.successColor,
                                   ),
                                 );
@@ -383,7 +411,8 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                     const Expanded(
                       child: Text(
                         'All Reviews',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ),
                     IconButton(

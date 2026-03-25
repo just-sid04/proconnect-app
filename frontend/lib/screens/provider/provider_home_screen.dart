@@ -57,10 +57,26 @@ class _ProviderNavBar extends StatelessWidget {
   const _ProviderNavBar({required this.currentIndex, required this.onTap});
 
   static const _items = [
-    (icon: Icons.dashboard_outlined,            activeIcon: Icons.dashboard_rounded,         label: 'Dashboard'),
-    (icon: Icons.calendar_today_outlined,        activeIcon: Icons.calendar_today_rounded,    label: 'Bookings'),
-    (icon: Icons.account_balance_wallet_outlined,activeIcon: Icons.account_balance_wallet_rounded, label: 'Earnings'),
-    (icon: Icons.person_outline,                activeIcon: Icons.person_rounded,            label: 'Profile'),
+    (
+      icon: Icons.dashboard_outlined,
+      activeIcon: Icons.dashboard_rounded,
+      label: 'Dashboard'
+    ),
+    (
+      icon: Icons.calendar_today_outlined,
+      activeIcon: Icons.calendar_today_rounded,
+      label: 'Bookings'
+    ),
+    (
+      icon: Icons.account_balance_wallet_outlined,
+      activeIcon: Icons.account_balance_wallet_rounded,
+      label: 'Earnings'
+    ),
+    (
+      icon: Icons.person_outline,
+      activeIcon: Icons.person_rounded,
+      label: 'Profile'
+    ),
   ];
 
   @override
@@ -77,7 +93,8 @@ class _ProviderNavBar extends StatelessWidget {
               color: AppTheme.navySurface,
               borderRadius: BorderRadius.circular(32),
               border: Border.all(color: AppTheme.dividerColor, width: 1),
-              boxShadow: AppTheme.glowShadow(AppTheme.primaryColor, blur: 20, spread: -4),
+              boxShadow: AppTheme.glowShadow(AppTheme.primaryColor,
+                  blur: 20, spread: -4),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -90,18 +107,23 @@ class _ProviderNavBar extends StatelessWidget {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 220),
                     curve: Curves.easeOut,
-                    padding: EdgeInsets.symmetric(horizontal: active ? 18 : 12, vertical: 8),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: active ? 18 : 12, vertical: 8),
                     decoration: BoxDecoration(
                       gradient: active ? AppTheme.primaryGradient : null,
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Row(children: [
-                      Icon(active ? item.activeIcon : item.icon, size: 22,
-                          color: active ? Colors.white : AppTheme.textSecondary),
+                      Icon(active ? item.activeIcon : item.icon,
+                          size: 22,
+                          color:
+                              active ? Colors.white : AppTheme.textSecondary),
                       if (active) ...[
                         const SizedBox(width: 6),
                         Text(item.label,
-                            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700,
+                            style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
                                 color: Colors.white)),
                       ],
                     ]),
@@ -121,7 +143,8 @@ class _ProviderNavBar extends StatelessWidget {
 class ProviderDashboardTab extends StatefulWidget {
   final VoidCallback openBookings;
   final VoidCallback openProfile;
-  const ProviderDashboardTab({super.key, required this.openBookings, required this.openProfile});
+  const ProviderDashboardTab(
+      {super.key, required this.openBookings, required this.openProfile});
   @override
   State<ProviderDashboardTab> createState() => _ProviderDashboardTabState();
 }
@@ -145,13 +168,13 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
-    final bp   = Provider.of<BookingProvider>(context);
-    final pp   = Provider.of<ProviderProvider>(context);
+    final bp = Provider.of<BookingProvider>(context);
+    final pp = Provider.of<ProviderProvider>(context);
 
-    final pending   = bp.pendingBookings;
-    final active    = bp.activeBookings;
+    final pending = bp.pendingBookings;
+    final active = bp.activeBookings;
     final completed = bp.completedBookings;
-    final provider  = pp.currentProvider;
+    final provider = pp.currentProvider;
 
     return RefreshIndicator(
       onRefresh: _loadData,
@@ -167,14 +190,26 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Row(children: [
-                Expanded(child: _KpiCard(label: 'Pending', value: '${pending.length}',
-                    icon: Icons.pending_actions_rounded, color: AppTheme.warningColor)),
+                Expanded(
+                    child: _KpiCard(
+                        label: 'Pending',
+                        value: '${pending.length}',
+                        icon: Icons.pending_actions_rounded,
+                        color: AppTheme.warningColor)),
                 const SizedBox(width: 10),
-                Expanded(child: _KpiCard(label: 'Active', value: '${active.length}',
-                    icon: Icons.construction_rounded, color: AppTheme.primaryColor)),
+                Expanded(
+                    child: _KpiCard(
+                        label: 'Active',
+                        value: '${active.length}',
+                        icon: Icons.construction_rounded,
+                        color: AppTheme.primaryColor)),
                 const SizedBox(width: 10),
-                Expanded(child: _KpiCard(label: 'Done', value: '${completed.length}',
-                    icon: Icons.check_circle_rounded, color: AppTheme.successColor)),
+                Expanded(
+                    child: _KpiCard(
+                        label: 'Done',
+                        value: '${completed.length}',
+                        icon: Icons.check_circle_rounded,
+                        color: AppTheme.successColor)),
               ]),
             ),
           ),
@@ -184,18 +219,26 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Row(children: [
-                Expanded(child: _ActionBtn(
-                  icon: Icons.calendar_today_rounded, label: 'Bookings',
-                  color: AppTheme.primaryColor, onTap: widget.openBookings)),
+                Expanded(
+                    child: _ActionBtn(
+                        icon: Icons.calendar_today_rounded,
+                        label: 'Bookings',
+                        color: AppTheme.primaryColor,
+                        onTap: widget.openBookings)),
                 const SizedBox(width: 10),
-                Expanded(child: _ActionBtn(
-                  icon: Icons.edit_note_rounded, label: 'Edit Profile',
-                  color: AppTheme.accentColor, onTap: widget.openProfile)),
+                Expanded(
+                    child: _ActionBtn(
+                        icon: Icons.edit_note_rounded,
+                        label: 'Edit Profile',
+                        color: AppTheme.accentColor,
+                        onTap: widget.openProfile)),
                 const SizedBox(width: 10),
-                Expanded(child: _ActionBtn(
-                  icon: Icons.share_rounded, label: 'Share',
-                  color: const Color(0xFF7C3AED),
-                  onTap: () => _shareProfile(context, provider))),
+                Expanded(
+                    child: _ActionBtn(
+                        icon: Icons.share_rounded,
+                        label: 'Share',
+                        color: const Color(0xFF7C3AED),
+                        onTap: () => _shareProfile(context, provider))),
               ]),
             ),
           ),
@@ -205,34 +248,41 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
               child: Row(children: [
-                Expanded(child: Text('New Requests',
-                    style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w700,
-                        color: AppTheme.textPrimary))),
+                Expanded(
+                    child: Text('New Requests',
+                        style: GoogleFonts.inter(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textPrimary))),
                 if (pending.isNotEmpty)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                     decoration: BoxDecoration(
                       color: AppTheme.warningColor.withAlpha(30),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text('${pending.length} new',
-                        style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700,
+                        style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
                             color: AppTheme.warningColor)),
                   ),
               ]),
             ),
           ),
           if (pending.isEmpty)
-            SliverToBoxAdapter(
+            const SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 child: _EmptyBox(message: 'No new booking requests'),
               ),
             )
           else
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList(delegate: SliverChildBuilderDelegate(
+              sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
                 (_, i) => _PendingCard(booking: pending[i]),
                 childCount: pending.length,
               )),
@@ -243,21 +293,24 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
               child: Text('Active Jobs',
-                  style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w700,
+                  style: GoogleFonts.inter(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary)),
             ),
           ),
           if (active.isEmpty)
-            SliverToBoxAdapter(
+            const SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 child: _EmptyBox(message: 'No active jobs right now'),
               ),
             )
           else
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList(delegate: SliverChildBuilderDelegate(
+              sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
                 (_, i) => _ActiveJobCard(booking: active[i]),
                 childCount: active.length,
               )),
@@ -270,41 +323,53 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
   }
 
   Widget _buildHeader(AuthProvider auth, dynamic provider) {
-    final name  = (auth.user?.name ?? 'Provider').split(' ').first;
+    final name = (auth.user?.name ?? 'Provider').split(' ').first;
     final photo = auth.user?.profilePhoto;
     final hour = DateTime.now().hour;
-    final greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    final greeting = hour < 12
+        ? 'Good morning'
+        : hour < 17
+            ? 'Good afternoon'
+            : 'Good evening';
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 56, 20, 24),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppTheme.navyDeep, Color(0xFF0F1428), AppTheme.navyMid],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
+      decoration: const BoxDecoration(gradient: AppTheme.heroGradient),
       child: Row(children: [
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(greeting, style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary)),
+        Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(greeting,
+              style: GoogleFonts.inter(
+                  fontSize: 13, color: AppTheme.textSecondary)),
           const SizedBox(height: 3),
-          Text(name, maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(fontSize: 26, fontWeight: FontWeight.w800,
+          Text(name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary)),
           if (provider != null) ...[
             const SizedBox(height: 4),
             Row(children: [
-              Container(width: 8, height: 8,
-                decoration: const BoxDecoration(color: AppTheme.successColor, shape: BoxShape.circle)),
+              Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                      color: AppTheme.successColor, shape: BoxShape.circle)),
               const SizedBox(width: 6),
               Text(provider.category?.name ?? 'Service Provider',
-                  style: GoogleFonts.inter(fontSize: 12, color: AppTheme.successColor,
+                  style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: AppTheme.successColor,
                       fontWeight: FontWeight.w500)),
             ]),
           ],
         ])),
         Container(
-          width: 50, height: 50,
+          width: 50,
+          height: 50,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: AppTheme.primaryGradient,
@@ -313,24 +378,30 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
           ),
           child: (photo?.isNotEmpty ?? false)
               ? ClipOval(child: Image.network(photo!, fit: BoxFit.cover))
-              : Center(child: Text(name.isNotEmpty ? name[0].toUpperCase() : 'P',
-                  style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w800,
-                      color: Colors.white))),
+              : Center(
+                  child: Text(name.isNotEmpty ? name[0].toUpperCase() : 'P',
+                      style: GoogleFonts.inter(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white))),
         ),
       ]),
     );
   }
 
   void _shareProfile(BuildContext context, dynamic provider) => showDialog(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Share Profile'),
-      content: Text(provider == null
-          ? 'Create your provider profile first.'
-          : 'ProConnect Provider\n\n${provider.displayName}\nID: ${provider.id}\n${provider.category?.name ?? 'Service Provider'}'),
-      actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close'))],
-    ),
-  );
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Share Profile'),
+          content: Text(provider == null
+              ? 'Create your provider profile first.'
+              : 'ProConnect Provider\n\n${provider.displayName}\nID: ${provider.id}\n${provider.category?.name ?? 'Service Provider'}'),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx), child: const Text('Close'))
+          ],
+        ),
+      );
 }
 
 // ─── KPI Card ────────────────────────────────────────────────────────────────
@@ -339,14 +410,19 @@ class _KpiCard extends StatelessWidget {
   final String label, value;
   final IconData icon;
   final Color color;
-  const _KpiCard({required this.label, required this.value, required this.icon, required this.color});
+  const _KpiCard(
+      {required this.label,
+      required this.value,
+      required this.icon,
+      required this.color});
   @override
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [color.withAlpha(40), color.withAlpha(15)],
-            begin: Alignment.topLeft, end: Alignment.bottomRight,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: color.withAlpha(80), width: 1),
@@ -354,8 +430,12 @@ class _KpiCard extends StatelessWidget {
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Icon(icon, color: color, size: 22),
           const SizedBox(height: 6),
-          Text(value, style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800, color: color)),
-          Text(label, style: GoogleFonts.inter(fontSize: 11, color: color.withAlpha(180))),
+          Text(value,
+              style: GoogleFonts.inter(
+                  fontSize: 22, fontWeight: FontWeight.w800, color: color)),
+          Text(label,
+              style:
+                  GoogleFonts.inter(fontSize: 11, color: color.withAlpha(180))),
         ]),
       );
 }
@@ -367,7 +447,11 @@ class _ActionBtn extends StatelessWidget {
   final String label;
   final Color color;
   final VoidCallback onTap;
-  const _ActionBtn({required this.icon, required this.label, required this.color, required this.onTap});
+  const _ActionBtn(
+      {required this.icon,
+      required this.label,
+      required this.color,
+      required this.onTap});
   @override
   Widget build(BuildContext context) => GestureDetector(
         onTap: onTap,
@@ -381,7 +465,9 @@ class _ActionBtn extends StatelessWidget {
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Icon(icon, color: color, size: 20),
             const SizedBox(height: 4),
-            Text(label, style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+            Text(label,
+                style: GoogleFonts.inter(
+                    fontSize: 11, fontWeight: FontWeight.w600, color: color)),
           ]),
         ),
       );
@@ -401,33 +487,48 @@ class _PendingCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.navySurface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.warningColor.withAlpha(60), width: 1),
+        border:
+            Border.all(color: AppTheme.warningColor.withAlpha(60), width: 1),
         boxShadow: AppTheme.cardShadow,
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           Container(
-            width: 44, height: 44,
-            decoration: BoxDecoration(
+            width: 44,
+            height: 44,
+            decoration: const BoxDecoration(
               gradient: AppTheme.goldGradient,
               shape: BoxShape.circle,
             ),
-            child: Center(child: Text(
+            child: Center(
+                child: Text(
               ((booking.customer?.name as String?) ?? 'C').isNotEmpty
-                  ? (booking.customer!.name as String)[0].toUpperCase() : 'C',
-              style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
+                  ? (booking.customer!.name as String)[0].toUpperCase()
+                  : 'C',
+              style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white),
             )),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(booking.customer?.name ?? 'Customer',
-                maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700,
-                    color: AppTheme.textPrimary)),
-            Text('${booking.scheduledDate} at ${booking.scheduledTime}',
-                maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
-          ])),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Text(booking.customer?.name ?? 'Customer',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary)),
+                Text('${booking.scheduledDate} at ${booking.scheduledTime}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        fontSize: 12, color: AppTheme.textSecondary)),
+              ])),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
@@ -435,21 +536,26 @@ class _PendingCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text('₹${booking.price.totalAmount.toStringAsFixed(0)}',
-                style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700,
+                style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
                     color: AppTheme.warningColor)),
           ),
         ]),
         if ((booking.description as String).isNotEmpty) ...[
           const SizedBox(height: 10),
           Text(booking.description,
-              maxLines: 2, overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary)),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                  fontSize: 13, color: AppTheme.textSecondary)),
         ],
         const SizedBox(height: 14),
         Row(children: [
           Expanded(
             child: GestureDetector(
-              onTap: () => bp.cancelBooking(booking.id, reason: 'Declined by provider'),
+              onTap: () =>
+                  bp.cancelBooking(booking.id, reason: 'Declined by provider'),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
@@ -457,9 +563,12 @@ class _PendingCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppTheme.errorColor.withAlpha(60)),
                 ),
-                child: Center(child: Text('Decline',
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700,
-                        color: AppTheme.errorColor))),
+                child: Center(
+                    child: Text('Decline',
+                        style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.errorColor))),
               ),
             ),
           ),
@@ -472,11 +581,15 @@ class _PendingCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: AppTheme.successGradient,
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: AppTheme.glowShadow(AppTheme.successColor, blur: 12),
+                  boxShadow:
+                      AppTheme.glowShadow(AppTheme.successColor, blur: 12),
                 ),
-                child: Center(child: Text('Accept',
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700,
-                        color: Colors.white))),
+                child: Center(
+                    child: Text('Accept',
+                        style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white))),
               ),
             ),
           ),
@@ -501,43 +614,61 @@ class _ActiveJobCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.navySurface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.primaryColor.withAlpha(50), width: 1),
+        border:
+            Border.all(color: AppTheme.primaryColor.withAlpha(50), width: 1),
         boxShadow: AppTheme.cardShadow,
       ),
       child: Row(children: [
         Container(
-          width: 44, height: 44,
+          width: 44,
+          height: 44,
           decoration: const BoxDecoration(
             gradient: AppTheme.primaryGradient,
             shape: BoxShape.circle,
           ),
-          child: Center(child: Text(
+          child: Center(
+              child: Text(
             ((booking.customer?.name as String?) ?? 'C').isNotEmpty
-                ? (booking.customer!.name as String)[0].toUpperCase() : 'C',
-            style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
+                ? (booking.customer!.name as String)[0].toUpperCase()
+                : 'C',
+            style: GoogleFonts.inter(
+                fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
           )),
         ),
         const SizedBox(width: 12),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(booking.customer?.name ?? 'Customer',
-              maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                   color: AppTheme.textPrimary)),
           Text('${booking.scheduledDate} · ${booking.scheduledTime}',
-              style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textSecondary)),
+              style: GoogleFonts.inter(
+                  fontSize: 12, color: AppTheme.textSecondary)),
         ])),
         GestureDetector(
-          onTap: () => isAccepted ? bp.startBooking(booking.id) : bp.completeBooking(booking.id),
+          onTap: () => isAccepted
+              ? bp.startBooking(booking.id)
+              : bp.completeBooking(booking.id),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
             decoration: BoxDecoration(
-              gradient: isAccepted ? AppTheme.primaryGradient : AppTheme.successGradient,
+              gradient: isAccepted
+                  ? AppTheme.primaryGradient
+                  : AppTheme.successGradient,
               borderRadius: BorderRadius.circular(12),
               boxShadow: AppTheme.glowShadow(
-                  isAccepted ? AppTheme.primaryColor : AppTheme.successColor, blur: 12),
+                  isAccepted ? AppTheme.primaryColor : AppTheme.successColor,
+                  blur: 12),
             ),
             child: Text(isAccepted ? 'Start' : 'Complete',
-                style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700,
+                style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
                     color: Colors.white)),
           ),
         ),
@@ -559,6 +690,7 @@ class _EmptyBox extends StatelessWidget {
         ),
         child: Text(message,
             textAlign: TextAlign.center,
-            style: GoogleFonts.inter(color: AppTheme.textSecondary, fontSize: 14)),
+            style:
+                GoogleFonts.inter(color: AppTheme.textSecondary, fontSize: 14)),
       );
 }

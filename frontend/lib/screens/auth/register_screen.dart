@@ -17,10 +17,10 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _nameCtrl    = TextEditingController();
-  final _emailCtrl   = TextEditingController();
-  final _phoneCtrl   = TextEditingController();
-  final _passCtrl    = TextEditingController();
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   bool _obscurePass = true;
   bool _obscureConfirm = true;
@@ -41,8 +41,12 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   @override
   void dispose() {
-    _nameCtrl.dispose(); _emailCtrl.dispose(); _phoneCtrl.dispose();
-    _passCtrl.dispose(); _confirmCtrl.dispose(); _animCtrl.dispose();
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _phoneCtrl.dispose();
+    _passCtrl.dispose();
+    _confirmCtrl.dispose();
+    _animCtrl.dispose();
     super.dispose();
   }
 
@@ -84,26 +88,24 @@ class _RegisterScreenState extends State<RegisterScreen>
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
-    final gradient = _isProvider ? AppTheme.primaryGradient : AppTheme.goldGradient;
-    final accentCol = _isProvider ? AppTheme.primaryColor : AppTheme.accentColor;
+    final gradient =
+        _isProvider ? AppTheme.primaryGradient : AppTheme.goldGradient;
+    final accentCol =
+        _isProvider ? AppTheme.primaryColor : AppTheme.accentColor;
 
     return Scaffold(
       backgroundColor: AppTheme.navyDeep,
       body: Stack(children: [
         // bg gradient
         Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppTheme.navyDeep, AppTheme.navyMid],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
+          decoration: const BoxDecoration(gradient: AppTheme.heroGradient),
         ),
-        Positioned(top: -60, left: -60,
-          child: _Orb(color: accentCol, size: 200)),
-        Positioned(bottom: -80, right: -80,
-          child: _Orb(color: AppTheme.primaryColor, size: 160)),
+        Positioned(
+            top: -60, left: -60, child: _Orb(color: accentCol, size: 200)),
+        const Positioned(
+            bottom: -80,
+            right: -80,
+            child: _Orb(color: AppTheme.primaryColor, size: 160)),
 
         SafeArea(
           child: FadeTransition(
@@ -135,38 +137,51 @@ class _RegisterScreenState extends State<RegisterScreen>
                       // Header
                       Row(children: [
                         Container(
-                          width: 44, height: 44,
+                          width: 44,
+                          height: 44,
                           decoration: BoxDecoration(
                             gradient: gradient,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
-                            _isProvider ? Icons.engineering_rounded : Icons.person_rounded,
-                            color: Colors.white, size: 22,
+                            _isProvider
+                                ? Icons.engineering_rounded
+                                : Icons.person_rounded,
+                            color: Colors.white,
+                            size: 22,
                           ),
                         ),
                         const SizedBox(width: 14),
-                        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(
-                            _isProvider ? 'Become a Provider' : 'Create Account',
-                            style: GoogleFonts.inter(
-                                fontSize: 22, fontWeight: FontWeight.w800,
-                                color: AppTheme.textPrimary),
-                          ),
-                          Text(
-                            _isProvider
-                                ? 'Share your skills & earn'
-                                : 'Find trusted professionals',
-                            style: GoogleFonts.inter(
-                                fontSize: 13, color: AppTheme.textSecondary),
-                          ),
-                        ]),
+                        Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _isProvider
+                                      ? 'Become a Provider'
+                                      : 'Create Account',
+                                  style: GoogleFonts.inter(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppTheme.textPrimary),
+                                ),
+                                Text(
+                                  _isProvider
+                                      ? 'Share your skills & earn'
+                                      : 'Find trusted professionals',
+                                  style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      color: AppTheme.textSecondary),
+                                ),
+                              ]),
+                        ),
                       ]),
                       const SizedBox(height: 28),
 
                       // Role badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
                         decoration: BoxDecoration(
                           gradient: gradient,
                           borderRadius: BorderRadius.circular(100),
@@ -174,14 +189,19 @@ class _RegisterScreenState extends State<RegisterScreen>
                         ),
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
                           Icon(
-                              _isProvider ? Icons.engineering_rounded : Icons.person_rounded,
-                              size: 14, color: Colors.white),
+                              _isProvider
+                                  ? Icons.engineering_rounded
+                                  : Icons.person_rounded,
+                              size: 14,
+                              color: Colors.white),
                           const SizedBox(width: 6),
                           Text(
                             _isProvider ? 'SERVICE PROVIDER' : 'CUSTOMER',
                             style: GoogleFonts.inter(
-                                fontSize: 11, fontWeight: FontWeight.w700,
-                                color: Colors.white, letterSpacing: 1.2),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                letterSpacing: 1.2),
                           ),
                         ]),
                       ),
@@ -201,9 +221,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                               prefixIcon: Icons.person_outline_rounded,
                               textInputAction: TextInputAction.next,
                               validator: (v) {
-                                if (v == null || v.trim().isEmpty)
+                                if (v == null || v.trim().isEmpty) {
                                   return 'Please enter your name';
-                                if (v.trim().length < 2) return 'At least 2 characters';
+                                }
+                                if (v.trim().length < 2)
+                                  return 'At least 2 characters';
                                 return null;
                               },
                             ),
@@ -216,9 +238,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                               prefixIcon: Icons.email_outlined,
                               textInputAction: TextInputAction.next,
                               validator: (v) {
-                                if (v == null || v.trim().isEmpty) return 'Enter your email';
-                                if (!v.contains('@') || !v.contains('.'))
+                                if (v == null || v.trim().isEmpty)
+                                  return 'Enter your email';
+                                if (!v.contains('@') || !v.contains('.')) {
                                   return 'Enter a valid email';
+                                }
                                 return null;
                               },
                             ),
@@ -231,9 +255,11 @@ class _RegisterScreenState extends State<RegisterScreen>
                               prefixIcon: Icons.phone_outlined,
                               textInputAction: TextInputAction.next,
                               validator: (v) {
-                                if (v == null || v.trim().isEmpty)
+                                if (v == null || v.trim().isEmpty) {
                                   return 'Enter your phone number';
-                                if (v.length < 10) return 'Enter a valid phone number';
+                                }
+                                if (v.length < 10)
+                                  return 'Enter a valid phone number';
                                 return null;
                               },
                             ),
@@ -249,20 +275,31 @@ class _RegisterScreenState extends State<RegisterScreen>
                               textInputAction: TextInputAction.next,
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  _obscurePass ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                  color: AppTheme.textSecondary, size: 20,
+                                  _obscurePass
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  color: AppTheme.textSecondary,
+                                  size: 20,
                                 ),
-                                onPressed: () => setState(() => _obscurePass = !_obscurePass),
+                                onPressed: () => setState(
+                                    () => _obscurePass = !_obscurePass),
                               ),
                               validator: (v) {
-                                if (v == null || v.isEmpty) return 'Enter a password';
-                                if (v.length < 6) return 'At least 6 characters';
-                                if (!RegExp(r'(?=.*[a-z])').hasMatch(v.trim()))
+                                if (v == null || v.isEmpty)
+                                  return 'Enter a password';
+                                if (v.length < 6)
+                                  return 'At least 6 characters';
+                                if (!RegExp(r'(?=.*[a-z])')
+                                    .hasMatch(v.trim())) {
                                   return 'Must have a lowercase letter';
-                                if (!RegExp(r'(?=.*[A-Z])').hasMatch(v.trim()))
+                                }
+                                if (!RegExp(r'(?=.*[A-Z])')
+                                    .hasMatch(v.trim())) {
                                   return 'Must have an uppercase letter';
-                                if (!RegExp(r'(?=.*\d)').hasMatch(v.trim()))
+                                }
+                                if (!RegExp(r'(?=.*\d)').hasMatch(v.trim())) {
                                   return 'Must have a number';
+                                }
                                 return null;
                               },
                             ),
@@ -276,14 +313,20 @@ class _RegisterScreenState extends State<RegisterScreen>
                               textInputAction: TextInputAction.done,
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  _obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                  color: AppTheme.textSecondary, size: 20,
+                                  _obscureConfirm
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  color: AppTheme.textSecondary,
+                                  size: 20,
                                 ),
-                                onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                                onPressed: () => setState(
+                                    () => _obscureConfirm = !_obscureConfirm),
                               ),
                               validator: (v) {
-                                if (v == null || v.isEmpty) return 'Confirm your password';
-                                if (v != _passCtrl.text) return 'Passwords do not match';
+                                if (v == null || v.isEmpty)
+                                  return 'Confirm your password';
+                                if (v != _passCtrl.text)
+                                  return 'Passwords do not match';
                                 return null;
                               },
                             ),
@@ -293,21 +336,28 @@ class _RegisterScreenState extends State<RegisterScreen>
 
                           // Terms
                           GestureDetector(
-                            onTap: () => setState(() => _agreeToTerms = !_agreeToTerms),
+                            onTap: () =>
+                                setState(() => _agreeToTerms = !_agreeToTerms),
                             child: Row(children: [
                               AnimatedContainer(
                                 duration: const Duration(milliseconds: 180),
-                                width: 22, height: 22,
+                                width: 22,
+                                height: 22,
                                 decoration: BoxDecoration(
-                                  color: _agreeToTerms ? accentCol : AppTheme.navyElevated,
+                                  color: _agreeToTerms
+                                      ? accentCol
+                                      : AppTheme.navyElevated,
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
-                                    color: _agreeToTerms ? accentCol : AppTheme.dividerColor,
+                                    color: _agreeToTerms
+                                        ? accentCol
+                                        : AppTheme.dividerColor,
                                     width: 1.5,
                                   ),
                                 ),
                                 child: _agreeToTerms
-                                    ? const Icon(Icons.check, size: 14, color: Colors.white)
+                                    ? const Icon(Icons.check,
+                                        size: 14, color: Colors.white)
                                     : null,
                               ),
                               const SizedBox(width: 12),
@@ -315,14 +365,17 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 child: Text.rich(TextSpan(
                                   text: 'I agree to the ',
                                   style: GoogleFonts.inter(
-                                      color: AppTheme.textSecondary, fontSize: 13),
+                                      color: AppTheme.textSecondary,
+                                      fontSize: 13),
                                   children: [
-                                    TextSpan(text: 'Terms of Service',
+                                    TextSpan(
+                                        text: 'Terms of Service',
                                         style: TextStyle(
                                             color: accentCol,
                                             fontWeight: FontWeight.w600)),
                                     const TextSpan(text: ' and '),
-                                    TextSpan(text: 'Privacy Policy',
+                                    TextSpan(
+                                        text: 'Privacy Policy',
                                         style: TextStyle(
                                             color: accentCol,
                                             fontWeight: FontWeight.w600)),
@@ -343,19 +396,23 @@ class _RegisterScreenState extends State<RegisterScreen>
 
                           const SizedBox(height: 20),
 
-                          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                            Text('Already have an account?',
-                                style: GoogleFonts.inter(
-                                    color: AppTheme.textSecondary, fontSize: 14)),
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text('Sign In',
-                                  style: GoogleFonts.inter(
-                                      color: AppTheme.primaryColor,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 14)),
-                            ),
-                          ]),
+                          Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                Text('Already have an account?',
+                                    style: GoogleFonts.inter(
+                                        color: AppTheme.textSecondary,
+                                        fontSize: 14)),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text('Sign In',
+                                      style: GoogleFonts.inter(
+                                          color: AppTheme.primaryColor,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 14)),
+                                ),
+                              ]),
                           const SizedBox(height: 32),
                         ]),
                       ),
@@ -389,11 +446,12 @@ class _Orb extends StatelessWidget {
   const _Orb({required this.color, required this.size});
   @override
   Widget build(BuildContext context) => Container(
-        width: size, height: size,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: RadialGradient(
-              colors: [color.withAlpha(50), color.withAlpha(0)]),
+          gradient:
+              RadialGradient(colors: [color.withAlpha(30), color.withAlpha(0)]),
         ),
       );
 }

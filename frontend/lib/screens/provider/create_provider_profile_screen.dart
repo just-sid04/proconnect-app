@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/provider_provider.dart';
 import '../../utils/theme.dart';
 
@@ -8,23 +7,25 @@ class CreateProviderProfileScreen extends StatefulWidget {
   const CreateProviderProfileScreen({super.key});
 
   @override
-  State<CreateProviderProfileScreen> createState() => _CreateProviderProfileScreenState();
+  State<CreateProviderProfileScreen> createState() =>
+      _CreateProviderProfileScreenState();
 }
 
-class _CreateProviderProfileScreenState extends State<CreateProviderProfileScreen> {
+class _CreateProviderProfileScreenState
+    extends State<CreateProviderProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _hourlyRateController = TextEditingController();
   final _experienceController = TextEditingController();
   final _serviceAreaController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _skillController = TextEditingController();
-  
-  List<String> _skills = [];
+
+  final List<String> _skills = [];
   bool _isLoading = false;
   String? _selectedCategoryId;
-  
+
   // Availability schedule
-  Map<String, DayAvailability> _availability = {
+  final Map<String, DayAvailability> _availability = {
     'monday': DayAvailability(day: 'Monday'),
     'tuesday': DayAvailability(day: 'Tuesday'),
     'wednesday': DayAvailability(day: 'Wednesday'),
@@ -76,8 +77,9 @@ class _CreateProviderProfileScreenState extends State<CreateProviderProfileScree
     setState(() => _isLoading = true);
 
     try {
-      final providerProvider = Provider.of<ProviderProvider>(context, listen: false);
-      
+      final providerProvider =
+          Provider.of<ProviderProvider>(context, listen: false);
+
       final success = await providerProvider.createProviderProfile(
         categoryId: _selectedCategoryId!,
         skills: _skills,
@@ -85,7 +87,8 @@ class _CreateProviderProfileScreenState extends State<CreateProviderProfileScree
         hourlyRate: double.parse(_hourlyRateController.text),
         description: _descriptionController.text,
         serviceArea: double.parse(_serviceAreaController.text),
-        availability: _availability.map((key, value) => MapEntry(key, value.toJson())),
+        availability:
+            _availability.map((key, value) => MapEntry(key, value.toJson())),
       );
 
       if (mounted) {
@@ -96,7 +99,9 @@ class _CreateProviderProfileScreenState extends State<CreateProviderProfileScree
           Navigator.pushReplacementNamed(context, '/provider-profile');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(providerProvider.error ?? 'Failed to create profile')),
+            SnackBar(
+                content:
+                    Text(providerProvider.error ?? 'Failed to create profile')),
           );
         }
       }
@@ -178,7 +183,7 @@ class _CreateProviderProfileScreenState extends State<CreateProviderProfileScree
                       builder: (context, providerProv, _) {
                         final categories = providerProv.categories;
                         return DropdownButtonFormField<String>(
-                          value: _selectedCategoryId,
+                          initialValue: _selectedCategoryId,
                           decoration: _inputDecoration(
                             hintText: 'Select your service category',
                             prefixIcon: Icons.category,
@@ -290,7 +295,8 @@ class _CreateProviderProfileScreenState extends State<CreateProviderProfileScree
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppTheme.primaryColor,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 16),
                           ),
                           child: const Text('Add'),
                         ),
@@ -306,8 +312,10 @@ class _CreateProviderProfileScreenState extends State<CreateProviderProfileScree
                             label: Text(skill),
                             deleteIcon: const Icon(Icons.close, size: 18),
                             onDeleted: () => _removeSkill(skill),
-                            backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-                            labelStyle: const TextStyle(color: AppTheme.primaryColor),
+                            backgroundColor:
+                                AppTheme.primaryColor.withOpacity(0.1),
+                            labelStyle:
+                                const TextStyle(color: AppTheme.primaryColor),
                           );
                         }).toList(),
                       ),
@@ -320,7 +328,8 @@ class _CreateProviderProfileScreenState extends State<CreateProviderProfileScree
                       controller: _descriptionController,
                       maxLines: 4,
                       decoration: _inputDecoration(
-                        hintText: 'Describe your experience, expertise, and what customers can expect...',
+                        hintText:
+                            'Describe your experience, expertise, and what customers can expect...',
                         prefixIcon: Icons.description,
                       ),
                       validator: (value) {
@@ -344,7 +353,8 @@ class _CreateProviderProfileScreenState extends State<CreateProviderProfileScree
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           children: _availability.entries.map((entry) {
-                            return _buildAvailabilityRow(entry.key, entry.value);
+                            return _buildAvailabilityRow(
+                                entry.key, entry.value);
                           }).toList(),
                         ),
                       ),
@@ -366,7 +376,8 @@ class _CreateProviderProfileScreenState extends State<CreateProviderProfileScree
                         ),
                         child: const Text(
                           'Create Profile',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -389,7 +400,8 @@ class _CreateProviderProfileScreenState extends State<CreateProviderProfileScree
     );
   }
 
-  InputDecoration _inputDecoration({required String hintText, required IconData prefixIcon}) {
+  InputDecoration _inputDecoration(
+      {required String hintText, required IconData prefixIcon}) {
     return InputDecoration(
       hintText: hintText,
       prefixIcon: Icon(prefixIcon, color: AppTheme.primaryColor),
@@ -430,7 +442,7 @@ class _CreateProviderProfileScreenState extends State<CreateProviderProfileScree
                 dayAvail.available = value;
               });
             },
-            activeColor: AppTheme.secondaryColor,
+            activeThumbColor: AppTheme.secondaryColor,
           ),
           const SizedBox(width: 8),
           if (dayAvail.available) ...[
@@ -468,7 +480,8 @@ class _CreateProviderProfileScreenState extends State<CreateProviderProfileScree
     );
     if (picked != null) {
       setState(() {
-        final timeStr = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+        final timeStr =
+            '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
         if (isStartTime) {
           dayAvail.startTime = timeStr;
         } else {

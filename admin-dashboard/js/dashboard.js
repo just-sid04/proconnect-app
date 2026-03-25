@@ -353,19 +353,17 @@ function renderPendingVerificationsList(providers) {
         const name = profile.name || 'Unknown';
         const catName = p.categories?.name || p['categories!category_id']?.name || 'Service Provider';
         return `
-        <div class="verification-item">
-            <div class="verification-info">
-                ${getInitialsAvatar(name, 40)}
-                <div>
-                    <h4>${name}</h4>
-                    <p>${catName}</p>
-                </div>
+        <div class="pending-item">
+            ${getInitialsAvatar(name, 40)}
+            <div class="info">
+                <strong>${name}</strong>
+                <p>${catName}</p>
             </div>
-            <div class="verification-actions">
-                <button class="btn btn-sm btn-success" onclick="approveProviderQuick('${p.id}')">
+            <div style="display:flex;gap:6px;">
+                <button class="btn btn-sm btn-success" onclick="approveProviderQuick('${p.id}')" title="Approve">
                     <i class="fas fa-check"></i>
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="rejectProviderQuick('${p.id}')">
+                <button class="btn btn-sm btn-danger" onclick="rejectProviderQuick('${p.id}')" title="Reject">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -753,10 +751,18 @@ async function loadCategoriesPage() {
 
 const CAT_ICON_MAP = {
     electrical:'bolt', plumbing:'faucet', appliance:'tv', computer:'laptop',
-    maintenance:'tools', tutoring:'graduation-cap', beauty:'spa',
+    maintenance:'tools', tutoring:'graduation-cap', beauty:'spa', parlour:'spa',
     automotive:'car', default:'handshake',
 };
-function getCatIcon(icon) { return CAT_ICON_MAP[icon] || icon || CAT_ICON_MAP.default; }
+function getCatIcon(iconOrObj) {
+    if (typeof iconOrObj === 'object' && iconOrObj !== null) {
+        let icon = iconOrObj.icon || iconOrObj.category_icon || '';
+        let name = (iconOrObj.name || iconOrObj.category_name || '').toLowerCase();
+        if ((!icon || icon === 'default') && name.includes('beauty')) return 'spa';
+        return CAT_ICON_MAP[icon] || icon || CAT_ICON_MAP.default;
+    }
+    return CAT_ICON_MAP[iconOrObj] || iconOrObj || CAT_ICON_MAP.default;
+}
 
 function renderCategoriesGrid(categories) {
     const grid = document.getElementById('categoriesGrid');
@@ -768,7 +774,7 @@ function renderCategoriesGrid(categories) {
     grid.innerHTML = categories.map(c => `
         <div class="category-card">
             <div class="category-icon" style="background:${c.color}20;color:${c.color}">
-                <i class="fas fa-${getCatIcon(c.icon)}"></i>
+                <i class="fas fa-${getCatIcon(c)}"></i>
             </div>
             <h4>${c.name}</h4>
             <p>${c.description || 'No description'}</p>
@@ -1049,7 +1055,7 @@ function renderEarningsCategoryTable(categories) {
                 <div style="display:flex;align-items:center;gap:10px;">
                     <div style="width:32px;height:32px;border-radius:8px;background:${color}20;
                                 display:flex;align-items:center;justify-content:center;">
-                        <i class="fas fa-${getCatIcon(cat.category_icon)}" style="color:${color};font-size:14px;"></i>
+                        <i class="fas fa-${getCatIcon(cat)}" style="color:${color};font-size:14px;"></i>
                     </div>
                     <strong>${cat.category_name}</strong>
                 </div>

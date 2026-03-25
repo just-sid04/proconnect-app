@@ -33,13 +33,7 @@ class ProfileScreen extends StatelessWidget {
               // Background gradient
               Container(
                 height: 230,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppTheme.navyDeep, Color(0xFF0F1428)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
+                decoration: const BoxDecoration(gradient: AppTheme.heroGradient),
               ),
               // Glow orb
               Positioned(top: -40, right: -40,

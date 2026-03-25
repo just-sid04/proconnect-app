@@ -2,7 +2,7 @@
 Map<String, dynamic> supabaseRowToJson(Map<String, dynamic> row) {
   final result = <String, dynamic>{};
   for (final e in row.entries) {
-    final camelKey = _snakeToCamel(e.key as String);
+    final camelKey = _snakeToCamel(e.key);
     result[camelKey] = _convertValue(e.value);
   }
   return result;
@@ -10,7 +10,7 @@ Map<String, dynamic> supabaseRowToJson(Map<String, dynamic> row) {
 
 dynamic _convertValue(dynamic value) {
   if (value is Map) {
-    return supabaseRowToJson(Map<String, dynamic>.from(value as Map));
+    return supabaseRowToJson(Map<String, dynamic>.from(value));
   }
   if (value is List) {
     return value.map(_convertValue).toList();
@@ -29,7 +29,7 @@ String _snakeToCamel(String s) {
 Map<String, dynamic> jsonToSupabaseRow(Map<String, dynamic> json) {
   final result = <String, dynamic>{};
   for (final e in json.entries) {
-    final snakeKey = _camelToSnake(e.key as String);
+    final snakeKey = _camelToSnake(e.key);
     result[snakeKey] = e.value;
   }
   return result;

@@ -44,9 +44,12 @@ class _LoginScreenState extends State<LoginScreen>
     final success = await auth.login(_emailCtrl.text.trim(), _passCtrl.text);
     if (!mounted) return;
     if (success) {
-      if (auth.isAdmin) Navigator.pushReplacementNamed(context, '/admin-home');
-      else if (auth.isProvider) Navigator.pushReplacementNamed(context, '/provider-home');
-      else Navigator.pushReplacementNamed(context, '/customer-home');
+      if (auth.isAdmin) {
+        Navigator.pushReplacementNamed(context, '/admin-home');
+      } else if (auth.isProvider)
+        Navigator.pushReplacementNamed(context, '/provider-home');
+      else
+        Navigator.pushReplacementNamed(context, '/customer-home');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(auth.error ?? 'Login failed'),
@@ -63,18 +66,16 @@ class _LoginScreenState extends State<LoginScreen>
       body: Stack(children: [
         // Background gradient + orbs
         Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppTheme.navyDeep, Color(0xFF0D1134), AppTheme.navyMid],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
+          decoration: const BoxDecoration(gradient: AppTheme.heroGradient),
         ),
-        Positioned(top: -80, right: -60,
-          child: _Orb(color: AppTheme.primaryColor, size: 200)),
-        Positioned(bottom: -60, left: -60,
-          child: _Orb(color: AppTheme.accentColor, size: 180)),
+        const Positioned(
+            top: -80,
+            right: -60,
+            child: _Orb(color: AppTheme.primaryColor, size: 200)),
+        const Positioned(
+            bottom: -60,
+            left: -60,
+            child: _Orb(color: AppTheme.accentColor, size: 180)),
 
         // Content
         SafeArea(
@@ -96,7 +97,8 @@ class _LoginScreenState extends State<LoginScreen>
                     // Title
                     Text('Welcome Back',
                         style: GoogleFonts.inter(
-                            fontSize: 30, fontWeight: FontWeight.w800,
+                            fontSize: 30,
+                            fontWeight: FontWeight.w800,
                             color: AppTheme.textPrimary),
                         textAlign: TextAlign.center),
                     const SizedBox(height: 8),
@@ -118,7 +120,8 @@ class _LoginScreenState extends State<LoginScreen>
                           prefixIcon: Icons.email_outlined,
                           textInputAction: TextInputAction.next,
                           validator: (v) {
-                            if (v == null || v.isEmpty) return 'Enter your email';
+                            if (v == null || v.isEmpty)
+                              return 'Enter your email';
                             if (!v.contains('@')) return 'Enter a valid email';
                             return null;
                           },
@@ -133,13 +136,18 @@ class _LoginScreenState extends State<LoginScreen>
                           textInputAction: TextInputAction.done,
                           suffixIcon: IconButton(
                             icon: Icon(
-                              _obscurePass ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                              color: AppTheme.textSecondary, size: 20,
+                              _obscurePass
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: AppTheme.textSecondary,
+                              size: 20,
                             ),
-                            onPressed: () => setState(() => _obscurePass = !_obscurePass),
+                            onPressed: () =>
+                                setState(() => _obscurePass = !_obscurePass),
                           ),
                           validator: (v) {
-                            if (v == null || v.isEmpty) return 'Enter your password';
+                            if (v == null || v.isEmpty)
+                              return 'Enter your password';
                             if (v.length < 6) return 'At least 6 characters';
                             return null;
                           },
@@ -164,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen>
                     // Sign In button
                     CustomButton(
                       text: 'Sign In',
-                      isGold: true,
+                      isGold: false,
                       onPressed: auth.isLoading ? null : _login,
                       isLoading: auth.isLoading,
                     ),
@@ -174,9 +182,11 @@ class _LoginScreenState extends State<LoginScreen>
                     // Sign up link
                     Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Text("Don't have an account?",
-                          style: GoogleFonts.inter(color: AppTheme.textSecondary, fontSize: 14)),
+                          style: GoogleFonts.inter(
+                              color: AppTheme.textSecondary, fontSize: 14)),
                       TextButton(
-                        onPressed: () => Navigator.pushNamed(context, '/role-selection'),
+                        onPressed: () =>
+                            Navigator.pushNamed(context, '/role-selection'),
                         child: Text('Sign up',
                             style: GoogleFonts.inter(
                                 color: AppTheme.primaryColor,
@@ -196,20 +206,20 @@ class _LoginScreenState extends State<LoginScreen>
 
   Widget _buildLogo() {
     return Container(
-      width: 80, height: 80,
+      width: 80,
+      height: 80,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [AppTheme.primaryColor, AppTheme.primaryDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: AppTheme.glowShadow(AppTheme.primaryColor, blur: 24, spread: 2),
+        boxShadow:
+            AppTheme.glowShadow(AppTheme.primaryColor, blur: 24, spread: 2),
       ),
-      child: Center(
-        child: Text('PC',
-            style: GoogleFonts.inter(
-                fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1)),
+      child: ClipOval(
+        child: Image.asset(
+          'assets/images/logo.png',
+          width: 80,
+          height: 80,
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
@@ -243,11 +253,13 @@ class _Orb extends StatelessWidget {
   const _Orb({required this.color, required this.size});
   @override
   Widget build(BuildContext context) => Container(
-        width: size, height: size,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: RadialGradient(colors: [
-            color.withAlpha(55), color.withAlpha(0),
+            color.withAlpha(30),
+            color.withAlpha(0),
           ]),
         ),
       );

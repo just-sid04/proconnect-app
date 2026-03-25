@@ -54,10 +54,22 @@ class _FloatingNavBar extends StatelessWidget {
   const _FloatingNavBar({required this.currentIndex, required this.onTap});
 
   static const _items = [
-    (icon: Icons.home_outlined,     activeIcon: Icons.home_rounded,              label: 'Home'),
-    (icon: Icons.search_outlined,   activeIcon: Icons.search_rounded,            label: 'Browse'),
-    (icon: Icons.receipt_long_outlined, activeIcon: Icons.receipt_long_rounded,  label: 'Bookings'),
-    (icon: Icons.person_outline,    activeIcon: Icons.person_rounded,            label: 'Profile'),
+    (icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Home'),
+    (
+      icon: Icons.search_outlined,
+      activeIcon: Icons.search_rounded,
+      label: 'Browse'
+    ),
+    (
+      icon: Icons.receipt_long_outlined,
+      activeIcon: Icons.receipt_long_rounded,
+      label: 'Bookings'
+    ),
+    (
+      icon: Icons.person_outline,
+      activeIcon: Icons.person_rounded,
+      label: 'Profile'
+    ),
   ];
 
   @override
@@ -74,7 +86,8 @@ class _FloatingNavBar extends StatelessWidget {
               color: AppTheme.navySurface,
               borderRadius: BorderRadius.circular(32),
               border: Border.all(color: AppTheme.dividerColor, width: 1),
-              boxShadow: AppTheme.glowShadow(AppTheme.primaryColor, blur: 20, spread: -4),
+              boxShadow: AppTheme.glowShadow(AppTheme.primaryColor,
+                  blur: 20, spread: -4),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -90,7 +103,7 @@ class _FloatingNavBar extends StatelessWidget {
                     padding: EdgeInsets.symmetric(
                         horizontal: active ? 20 : 12, vertical: 8),
                     decoration: BoxDecoration(
-                      gradient: active ? AppTheme.goldGradient : null,
+                      gradient: active ? AppTheme.primaryGradient : null,
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Row(children: [
@@ -124,7 +137,8 @@ class _FloatingNavBar extends StatelessWidget {
 class HomeTab extends StatefulWidget {
   final VoidCallback openBrowse;
   final VoidCallback openBookings;
-  const HomeTab({super.key, required this.openBrowse, required this.openBookings});
+  const HomeTab(
+      {super.key, required this.openBrowse, required this.openBookings});
   @override
   State<HomeTab> createState() => _HomeTabState();
 }
@@ -149,8 +163,8 @@ class _HomeTabState extends State<HomeTab> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
-    final pp   = Provider.of<ProviderProvider>(context);
-    final bp   = Provider.of<BookingProvider>(context);
+    final pp = Provider.of<ProviderProvider>(context);
+    final bp = Provider.of<BookingProvider>(context);
 
     final featuredProviders = pp.providers.take(6).toList();
     final recentBookings = bp.bookings
@@ -171,22 +185,28 @@ class _HomeTabState extends State<HomeTab> {
 
           // ── Error banners ──────────────────────────────────────────────
           if (pp.error != null)
-            SliverToBoxAdapter(child: _ErrorBanner(message: pp.error!, onRetry: _loadData)),
+            SliverToBoxAdapter(
+                child: _ErrorBanner(message: pp.error!, onRetry: _loadData)),
           if (bp.error != null)
-            SliverToBoxAdapter(child: _ErrorBanner(message: bp.error!, onRetry: _loadData, isWarning: true)),
+            SliverToBoxAdapter(
+                child: _ErrorBanner(
+                    message: bp.error!, onRetry: _loadData, isWarning: true)),
 
           // ── Categories ─────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-              child: _SectionHeader(title: 'Categories', onSeeAll: widget.openBrowse),
+              child: _SectionHeader(
+                  title: 'Categories', onSeeAll: widget.openBrowse),
             ),
           ),
           SliverToBoxAdapter(
             child: SizedBox(
               height: 116,
               child: pp.isLoading && pp.categories.isEmpty
-                  ? const Center(child: CircularProgressIndicator(color: AppTheme.accentColor))
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                          color: AppTheme.accentColor))
                   : ListView.builder(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.fromLTRB(20, 12, 8, 0),
@@ -207,7 +227,8 @@ class _HomeTabState extends State<HomeTab> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-                child: _SectionHeader(title: 'Active Bookings', onSeeAll: widget.openBookings),
+                child: _SectionHeader(
+                    title: 'Active Bookings', onSeeAll: widget.openBookings),
               ),
             ),
             SliverPadding(
@@ -216,9 +237,11 @@ class _HomeTabState extends State<HomeTab> {
                 delegate: SliverChildBuilderDelegate(
                   (_, i) => _BookingTile(
                     booking: recentBookings[i],
-                    onTap: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (_) =>
-                            BookingDetailsScreen(bookingId: recentBookings[i].id))),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => BookingDetailsScreen(
+                                bookingId: recentBookings[i].id))),
                   ),
                   childCount: recentBookings.length,
                 ),
@@ -230,13 +253,14 @@ class _HomeTabState extends State<HomeTab> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-              child: _SectionHeader(title: 'Top Rated Providers', onSeeAll: widget.openBrowse),
+              child: _SectionHeader(
+                  title: 'Top Rated Providers', onSeeAll: widget.openBrowse),
             ),
           ),
           SliverToBoxAdapter(
             child: featuredProviders.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
                     child: _EmptyCard(message: 'No providers available yet.'),
                   )
                 : SizedBox(
@@ -247,9 +271,11 @@ class _HomeTabState extends State<HomeTab> {
                       itemCount: featuredProviders.length,
                       itemBuilder: (_, i) => _ProviderCard(
                         provider: featuredProviders[i],
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) =>
-                                ProviderDetailsScreen(providerId: featuredProviders[i].id))),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => ProviderDetailsScreen(
+                                    providerId: featuredProviders[i].id))),
                       ),
                     ),
                   ),
@@ -261,40 +287,46 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, AuthProvider auth, BookingProvider bp) {
+  Widget _buildHeader(
+      BuildContext context, AuthProvider auth, BookingProvider bp) {
     final name = (auth.user?.name ?? 'Guest').split(' ').first;
     final photo = auth.user?.profilePhoto;
     final hour = DateTime.now().hour;
-    final greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    final greeting = hour < 12
+        ? 'Good morning'
+        : hour < 17
+            ? 'Good afternoon'
+            : 'Good evening';
     final topPad = MediaQuery.of(context).padding.top + 16;
 
     return Container(
       padding: EdgeInsets.fromLTRB(20, topPad, 20, 24),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppTheme.navyDeep, Color(0xFF0F1428), AppTheme.navyMid],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
+      decoration: const BoxDecoration(gradient: AppTheme.heroGradient),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         // Top row
         Row(children: [
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(greeting,
-                style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary)),
-            const SizedBox(height: 2),
-            Text(name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
-                    fontSize: 26, fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
-          ])),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Text(greeting,
+                    style: GoogleFonts.inter(
+                        fontSize: 13, color: AppTheme.textSecondary)),
+                const SizedBox(height: 2),
+                Text(name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary)),
+              ])),
           // Avatar
           GestureDetector(
             onTap: () {},
             child: Container(
-              width: 48, height: 48,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: AppTheme.primaryGradient,
@@ -302,10 +334,13 @@ class _HomeTabState extends State<HomeTab> {
               ),
               child: (photo?.isNotEmpty ?? false)
                   ? ClipOval(child: Image.network(photo!, fit: BoxFit.cover))
-                  : Center(child: Text(
+                  : Center(
+                      child: Text(
                       name.isNotEmpty ? name[0].toUpperCase() : 'G',
                       style: GoogleFonts.inter(
-                          fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white),
                     )),
             ),
           ),
@@ -324,17 +359,21 @@ class _HomeTabState extends State<HomeTab> {
               border: Border.all(color: AppTheme.dividerColor, width: 1),
             ),
             child: Row(children: [
-              const Icon(Icons.search_rounded, color: AppTheme.textSecondary, size: 20),
+              const Icon(Icons.search_rounded,
+                  color: AppTheme.textSecondary, size: 20),
               const SizedBox(width: 12),
-              Expanded(child: Text('Search for services...',
-                  style: GoogleFonts.inter(color: AppTheme.textHint, fontSize: 14))),
+              Expanded(
+                  child: Text('Search for services...',
+                      style: GoogleFonts.inter(
+                          color: AppTheme.textHint, fontSize: 14))),
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor.withAlpha(40),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.tune_rounded, color: AppTheme.primaryColor, size: 16),
+                child: const Icon(Icons.tune_rounded,
+                    color: AppTheme.primaryColor, size: 16),
               ),
             ]),
           ),
@@ -346,7 +385,8 @@ class _HomeTabState extends State<HomeTab> {
         Row(children: [
           _QuickStat(
             icon: Icons.receipt_long_rounded,
-            value: '${bp.bookings.where((b) => !b.isCompleted && !b.isCancelled).length}',
+            value:
+                '${bp.bookings.where((b) => !b.isCompleted && !b.isCancelled).length}',
             label: 'Active',
             color: AppTheme.accentColor,
           ),
@@ -358,11 +398,11 @@ class _HomeTabState extends State<HomeTab> {
             color: AppTheme.successColor,
           ),
           const SizedBox(width: 10),
-          _QuickStat(
+          const _QuickStat(
             icon: Icons.star_rounded,
             value: '4.9',
             label: 'Rating',
-            color: const Color(0xFF7C3AED),
+            color: Color(0xFF7C3AED),
           ),
         ]),
       ]),
@@ -376,7 +416,11 @@ class _QuickStat extends StatelessWidget {
   final IconData icon;
   final String value, label;
   final Color color;
-  const _QuickStat({required this.icon, required this.value, required this.label, required this.color});
+  const _QuickStat(
+      {required this.icon,
+      required this.value,
+      required this.label,
+      required this.color});
   @override
   Widget build(BuildContext context) => Expanded(
         child: Container(
@@ -390,20 +434,23 @@ class _QuickStat extends StatelessWidget {
             Icon(icon, color: color, size: 16),
             const SizedBox(width: 6),
             Flexible(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                          fontSize: 15, fontWeight: FontWeight.w700,
-                          color: AppTheme.textPrimary)),
-                  Text(label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(fontSize: 10, color: AppTheme.textSecondary)),
-                ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textPrimary)),
+                    Text(label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                            fontSize: 10, color: AppTheme.textSecondary)),
+                  ]),
             ),
           ]),
         ),
@@ -417,21 +464,26 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
         children: [
-          Expanded(child: Text(title,
-              style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary))),
+          Expanded(
+              child: Text(title,
+                  style: GoogleFonts.inter(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary))),
           if (onSeeAll != null)
             GestureDetector(
               onTap: onSeeAll,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor.withAlpha(30),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text('See All',
                     style: GoogleFonts.inter(
-                        fontSize: 12, fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                         color: AppTheme.primaryColor)),
               ),
             ),
@@ -446,15 +498,24 @@ class _CategoryTile extends StatelessWidget {
 
   IconData _icon(String s) {
     switch (s) {
-      case 'electrical': return Icons.electrical_services_rounded;
-      case 'plumbing':   return Icons.water_damage_rounded;
-      case 'appliance':  return Icons.kitchen_rounded;
-      case 'computer':   return Icons.computer_rounded;
-      case 'maintenance': return Icons.home_repair_service_rounded;
-      case 'tutoring':   return Icons.school_rounded;
-      case 'beauty':     return Icons.spa_rounded;
-      case 'automotive': return Icons.directions_car_rounded;
-      default:           return Icons.handyman_rounded;
+      case 'electrical':
+        return Icons.electrical_services_rounded;
+      case 'plumbing':
+        return Icons.water_damage_rounded;
+      case 'appliance':
+        return Icons.kitchen_rounded;
+      case 'computer':
+        return Icons.computer_rounded;
+      case 'maintenance':
+        return Icons.home_repair_service_rounded;
+      case 'tutoring':
+        return Icons.school_rounded;
+      case 'beauty':
+        return Icons.spa_rounded;
+      case 'automotive':
+        return Icons.directions_car_rounded;
+      default:
+        return Icons.handyman_rounded;
     }
   }
 
@@ -477,16 +538,19 @@ class _CategoryTile extends StatelessWidget {
           padding: const EdgeInsets.only(right: 12),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Container(
-              width: 60, height: 60,
+              width: 60,
+              height: 60,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [color, color.withAlpha(160)],
-                  begin: Alignment.topLeft, end: Alignment.bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: AppTheme.glowShadow(color, blur: 10, spread: -2),
               ),
-              child: Icon(_icon(category.icon ?? ''), color: Colors.white, size: 26),
+              child: Icon(_icon(category.icon ?? ''),
+                  color: Colors.white, size: 26),
             ),
             const SizedBox(height: 6),
             Text(
@@ -525,7 +589,10 @@ class _ProviderCardState extends State<_ProviderCard> {
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        widget.onTap();
+      },
       onTapCancel: () => setState(() => _pressed = false),
       child: AnimatedScale(
         scale: _pressed ? 0.97 : 1.0,
@@ -539,19 +606,23 @@ class _ProviderCardState extends State<_ProviderCard> {
             border: Border.all(color: AppTheme.dividerColor, width: 1),
             boxShadow: AppTheme.cardShadow,
           ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             // Avatar header
             Container(
               height: 92,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: AppTheme.primaryGradient,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
               child: Stack(alignment: Alignment.center, children: [
                 // Decorative bg circle
-                Positioned(right: -20, bottom: -20,
+                Positioned(
+                  right: -20,
+                  bottom: -20,
                   child: Container(
-                    width: 90, height: 90,
+                    width: 90,
+                    height: 90,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white.withAlpha(15),
@@ -559,70 +630,94 @@ class _ProviderCardState extends State<_ProviderCard> {
                   ),
                 ),
                 Container(
-                  width: 56, height: 56,
+                  width: 56,
+                  height: 56,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppTheme.navySurface,
                     border: Border.all(color: AppTheme.accentColor, width: 2),
                   ),
                   child: hasPhoto
-                      ? ClipOval(child: Image.network(p.profileImage, fit: BoxFit.cover))
-                      : Center(child: Text(
+                      ? ClipOval(
+                          child:
+                              Image.network(p.profileImage, fit: BoxFit.cover))
+                      : Center(
+                          child: Text(
                           (p.displayName as String).isNotEmpty
-                              ? (p.displayName as String)[0].toUpperCase() : 'P',
+                              ? (p.displayName as String)[0].toUpperCase()
+                              : 'P',
                           style: GoogleFonts.inter(
-                              fontSize: 22, fontWeight: FontWeight.w800,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
                               color: AppTheme.textPrimary),
                         )),
                 ),
                 // Verified badge
                 if (p.isVerified == true)
-                  Positioned(top: 8, right: 8,
+                  Positioned(
+                    top: 8,
+                    right: 8,
                     child: Container(
                       padding: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
                         color: AppTheme.successColor,
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppTheme.navySurface, width: 1.5),
+                        border:
+                            Border.all(color: AppTheme.navySurface, width: 1.5),
                       ),
-                      child: const Icon(Icons.check, size: 9, color: Colors.white),
+                      child:
+                          const Icon(Icons.check, size: 9, color: Colors.white),
                     ),
                   ),
               ]),
             ),
             Padding(
               padding: const EdgeInsets.all(12),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(p.displayName ?? 'Provider',
-                    maxLines: 1, overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700,
-                        color: AppTheme.textPrimary)),
-                const SizedBox(height: 3),
-                // Category pill
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withAlpha(30),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: Text(p.category?.name ?? 'Service',
-                      maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600,
-                          color: AppTheme.primaryColor)),
-                ),
-                const SizedBox(height: 10),
-                Row(children: [
-                  const Icon(Icons.star_rounded, size: 14, color: AppTheme.accentColor),
-                  const SizedBox(width: 3),
-                  Text((p.rating as double).toStringAsFixed(1),
-                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600,
-                          color: AppTheme.textPrimary)),
-                  const Spacer(),
-                  Text('₹${(p.hourlyRate as double).toStringAsFixed(0)}/hr',
-                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700,
-                          color: AppTheme.accentColor)),
-                ]),
-              ]),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(p.displayName ?? 'Provider',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textPrimary)),
+                    const SizedBox(height: 3),
+                    // Category pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withAlpha(30),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Text(p.category?.name ?? 'Service',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.primaryColor)),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(children: [
+                      const Icon(Icons.star_rounded,
+                          size: 14, color: AppTheme.accentColor),
+                      const SizedBox(width: 3),
+                      Text((p.rating as double).toStringAsFixed(1),
+                          style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.textPrimary)),
+                      const Spacer(),
+                      Text('₹${(p.hourlyRate as double).toStringAsFixed(0)}/hr',
+                          style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.accentColor)),
+                    ]),
+                  ]),
             ),
           ]),
         ),
@@ -637,7 +732,11 @@ class _BookingTile extends StatelessWidget {
   const _BookingTile({required this.booking, required this.onTap});
 
   Color _statusColor() {
-    try { return booking.statusColor as Color; } catch (_) { return AppTheme.primaryColor; }
+    try {
+      return booking.statusColor as Color;
+    } catch (_) {
+      return AppTheme.primaryColor;
+    }
   }
 
   @override
@@ -655,7 +754,8 @@ class _BookingTile extends StatelessWidget {
         ),
         child: Row(children: [
           Container(
-            width: 42, height: 42,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
               color: color.withAlpha(30),
               borderRadius: BorderRadius.circular(12),
@@ -663,15 +763,23 @@ class _BookingTile extends StatelessWidget {
             child: Icon(Icons.calendar_today_rounded, color: color, size: 20),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(booking.provider?.displayName ?? 'Unknown Provider',
-                maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary)),
-            Text('${booking.scheduledDate} at ${booking.scheduledTime}',
-                maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(fontSize: 11, color: AppTheme.textSecondary)),
-          ])),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Text(booking.provider?.displayName ?? 'Unknown Provider',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textPrimary)),
+                Text('${booking.scheduledDate} at ${booking.scheduledTime}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        fontSize: 11, color: AppTheme.textSecondary)),
+              ])),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
@@ -679,7 +787,8 @@ class _BookingTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(booking.statusDisplay ?? 'Pending',
-                style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: color)),
+                style: GoogleFonts.inter(
+                    fontSize: 11, fontWeight: FontWeight.w700, color: color)),
           ),
         ]),
       ),
@@ -708,7 +817,8 @@ class _ErrorBanner extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
   final bool isWarning;
-  const _ErrorBanner({required this.message, required this.onRetry, this.isWarning = false});
+  const _ErrorBanner(
+      {required this.message, required this.onRetry, this.isWarning = false});
   @override
   Widget build(BuildContext context) {
     final color = isWarning ? AppTheme.warningColor : AppTheme.errorColor;
@@ -721,13 +831,17 @@ class _ErrorBanner extends StatelessWidget {
         border: Border.all(color: color.withAlpha(80), width: 1),
       ),
       child: Row(children: [
-        Icon(isWarning ? Icons.warning_rounded : Icons.error_rounded, color: color, size: 18),
+        Icon(isWarning ? Icons.warning_rounded : Icons.error_rounded,
+            color: color, size: 18),
         const SizedBox(width: 10),
-        Expanded(child: Text(message,
-            style: GoogleFonts.inter(fontSize: 12, color: color))),
+        Expanded(
+            child: Text(message,
+                style: GoogleFonts.inter(fontSize: 12, color: color))),
         TextButton(
           onPressed: onRetry,
-          child: Text('Retry', style: GoogleFonts.inter(color: color, fontWeight: FontWeight.w700)),
+          child: Text('Retry',
+              style:
+                  GoogleFonts.inter(color: color, fontWeight: FontWeight.w700)),
         ),
       ]),
     );

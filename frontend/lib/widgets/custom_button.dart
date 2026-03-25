@@ -44,8 +44,8 @@ class _CustomButtonState extends State<CustomButton>
     super.initState();
     _ctrl = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 120));
-    _scale = Tween<double>(begin: 1.0, end: 0.96).animate(
-        CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+    _scale = Tween<double>(begin: 1.0, end: 0.96)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
   }
 
   @override
@@ -68,7 +68,8 @@ class _CustomButtonState extends State<CustomButton>
                 end: Alignment.bottomRight,
               );
 
-    final glowColor = widget.isGold ? AppTheme.accentColor : AppTheme.primaryColor;
+    final glowColor =
+        widget.isGold ? AppTheme.accentColor : AppTheme.primaryColor;
 
     final child = isLoading
         ? SizedBox(
@@ -84,7 +85,8 @@ class _CustomButtonState extends State<CustomButton>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (widget.icon != null) ...[
-                Icon(widget.icon, size: 19, color: widget.textColor ?? Colors.white),
+                Icon(widget.icon,
+                    size: 19, color: widget.textColor ?? Colors.white),
                 const SizedBox(width: 8),
               ],
               Text(
@@ -93,7 +95,9 @@ class _CustomButtonState extends State<CustomButton>
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: widget.textColor ??
-                      (widget.isOutlined ? AppTheme.primaryColor : Colors.white),
+                      (widget.isOutlined
+                          ? AppTheme.primaryColor
+                          : Colors.white),
                   letterSpacing: 0.3,
                 ),
               ),
@@ -104,7 +108,12 @@ class _CustomButtonState extends State<CustomButton>
 
     return GestureDetector(
       onTapDown: disabled ? null : (_) => _ctrl.forward(),
-      onTapUp: disabled ? null : (_) { _ctrl.reverse(); widget.onPressed?.call(); },
+      onTapUp: disabled
+          ? null
+          : (_) {
+              _ctrl.reverse();
+              widget.onPressed?.call();
+            },
       onTapCancel: () => _ctrl.reverse(),
       child: ScaleTransition(
         scale: _scale,
@@ -114,7 +123,8 @@ class _CustomButtonState extends State<CustomButton>
                 height: widget.height,
                 decoration: BoxDecoration(
                   border: Border.all(
-                      color: disabled ? AppTheme.textHint : AppTheme.primaryColor,
+                      color:
+                          disabled ? AppTheme.textHint : AppTheme.primaryColor,
                       width: 1.5),
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -125,7 +135,7 @@ class _CustomButtonState extends State<CustomButton>
                 height: widget.height,
                 decoration: BoxDecoration(
                   gradient: disabled
-                      ? LinearGradient(colors: [
+                      ? const LinearGradient(colors: [
                           AppTheme.navyElevated,
                           AppTheme.navyElevated
                         ])
