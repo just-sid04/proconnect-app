@@ -63,11 +63,9 @@ class BookingProvider extends ChangeNotifier {
     // If already loading, skip duplicate calls
     if (_isLoading) return;
 
+    debugPrint('BookingProvider: Loading bookings (role: $role, status: $status)');
     _setLoading(true);
     _error = null;
-
-    // Note: We do NOT clear _bookings here. We only replace them after a
-    // successful fetch. This prevents the UI from flashing empty on reload.
 
     try {
       final response = await _bookingService.getBookings(
@@ -78,12 +76,14 @@ class BookingProvider extends ChangeNotifier {
       if (response.success) {
         _bookings = response.data ?? [];
         _error = null;
+        debugPrint('BookingProvider: Loaded ${_bookings.length} bookings');
       } else {
-        // Keep existing bookings visible; just surface the error
         _error = response.message;
+        debugPrint('BookingProvider: Load failed - $_error');
       }
     } catch (e) {
       _error = 'Could not load bookings. Please try again.';
+      debugPrint('BookingProvider: Load exception - $e');
     } finally {
       _setLoading(false);
     }
@@ -176,7 +176,24 @@ class BookingProvider extends ChangeNotifier {
     required String status,
     String? cancellationReason,
   }) async {
-    _setLoading(true);
+    final oldBookings = List<Booking>.from(_bookings);
+    final index = _bookings.indexWhere((b) => b.id == id);
+    
+    debugPrint('BookingProvider: Updating status for $id to $status (Optimistic)');
+    
+    // --- OPTIMISTIC UI: Update local state immediately ---
+    if (index != -1) {
+      final oldBooking = _bookings[index];
+      _bookings[index] = oldBooking.copyWith(
+        status: status,
+        updatedAt: DateTime.now(),
+      );
+      // This notification ensures the UI reflects the change INSTANTLY
+      notifyListeners();
+    }
+
+    // Start background loading WITHOUT notifying again immediately
+    _setLoading(true, notify: false);
     _error = null;
 
     try {
@@ -188,11 +205,11 @@ class BookingProvider extends ChangeNotifier {
 
       if (response.success && response.data != null) {
         final updated = response.data!;
-        final index = _bookings.indexWhere((b) => b.id == id);
-        if (index != -1) {
-          _bookings[index] = updated;
+        debugPrint('BookingProvider: Status update confirmed by server');
+        final idx = _bookings.indexWhere((b) => b.id == id);
+        if (idx != -1) {
+          _bookings[idx] = updated;
         } else {
-          // Booking wasn't in list yet — add it
           _bookings.insert(0, updated);
         }
         if (_currentBooking?.id == id) _currentBooking = updated;
@@ -200,11 +217,16 @@ class BookingProvider extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
+        debugPrint('BookingProvider: Update failed, rolling back - ${response.message}');
+        // --- ROLLBACK on failure ---
+        _bookings = oldBookings;
         _error = response.message;
         notifyListeners();
         return false;
       }
     } catch (e) {
+      debugPrint('BookingProvider: Update exception, rolling back - $e');
+      _bookings = oldBookings;
       _error = 'Could not update booking. Please try again.';
       notifyListeners();
       return false;
@@ -280,9 +302,10 @@ class BookingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _setLoading(bool value) {
+  void _setLoading(bool value, {bool notify = true}) {
+    if (_isLoading == value) return;
     _isLoading = value;
-    notifyListeners();
+    if (notify) notifyListeners();
   }
 
   // ─── Realtime ──────────────────────────────────────────────────────────────
@@ -382,12 +405,22 @@ class BookingProvider extends ChangeNotifier {
       final id = payload.newRecord['id'] as String?;
       if (id == null) return;
 
+      // IDEMPOTENCY: Check if we already have this update locally (from optimistic UI)
+      final existingIndex = _bookings.indexWhere((b) => b.id == id);
+      if (existingIndex != -1) {
+        final existingStatus = _bookings[existingIndex].status;
+        final newStatus = payload.newRecord['status'] as String?;
+        if (existingStatus == newStatus) {
+          // Update matches what we have — no need to re-fetch full object
+          return;
+        }
+      }
+
       final res = await _bookingService.getBookingById(id);
       if (res.success && res.data != null) {
         final updated = res.data!;
-        final index = _bookings.indexWhere((b) => b.id == id);
-        if (index != -1) {
-          _bookings[index] = updated;
+        if (existingIndex != -1) {
+          _bookings[existingIndex] = updated;
         } else {
           _bookings.insert(0, updated);
         }

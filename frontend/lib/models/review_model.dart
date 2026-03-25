@@ -32,10 +32,10 @@ class Review {
       bookingId: json['bookingId'] ?? '',
       customerId: json['customerId'] ?? '',
       providerId: json['providerId'] ?? '',
-      rating: json['rating'] ?? 0,
+      rating: (json['rating'] as num?)?.toInt() ?? 0,
       comment: json['comment'] ?? '',
-      createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
       customer: json['customer'] != null ? User.fromJson(json['customer']) : null,
       provider: json['provider'] != null ? ServiceProvider.fromJson(json['provider']) : null,
     );

@@ -241,6 +241,22 @@ class _HomeTabState extends State<HomeTab> {
                 child: _ErrorBanner(
                     message: bp.error!, onRetry: _loadData, isWarning: true)),
 
+          // --- NON-BLOCKING LOADING INDICATOR ---
+          if ((pp.isLoading && pp.providers.isNotEmpty) || (bp.isLoading && bp.bookings.isNotEmpty))
+            const SliverToBoxAdapter(
+              child: LinearProgressIndicator(
+                backgroundColor: Colors.transparent,
+                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.accentColor),
+                minHeight: 2,
+              ),
+            ),
+
+          if ((pp.isLoading && pp.providers.isEmpty) || (bp.isLoading && bp.bookings.isEmpty))
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+            )
+          else ...[
+
           // ── Categories ─────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
@@ -331,6 +347,7 @@ class _HomeTabState extends State<HomeTab> {
           ),
 
           const SliverToBoxAdapter(child: SizedBox(height: 28)),
+          ]
         ],
       ),
     );

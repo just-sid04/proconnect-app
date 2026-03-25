@@ -58,7 +58,10 @@ class BookingService {
         if (status != null) query = query.eq('status', status);
 
         // Apply ordering last (PostgrestTransformBuilder)
-        final data = await query.order('created_at', ascending: false);
+        final data = await query
+            .order('created_at', ascending: false)
+            .timeout(const Duration(seconds: 15));
+
         final list = (data as List)
             .map((r) => Booking.fromJson(
                   supabaseRowToJson(Map<String, dynamic>.from(r as Map)),
@@ -66,6 +69,9 @@ class BookingService {
             .toList();
         return ApiResponse.success(list);
       } catch (e) {
+        if (e.toString().contains('TimeoutException')) {
+          return ApiResponse.error('Request timed out. Please check your connection.');
+        }
         return ApiResponse.error('Failed to load bookings: $e');
       }
     }
@@ -95,12 +101,16 @@ class BookingService {
             .from('bookings')
             .select(_kBookingJoin)
             .eq('id', id)
-            .maybeSingle();
+            .maybeSingle()
+            .timeout(const Duration(seconds: 15));
         if (data == null) return ApiResponse.error('Booking not found');
         return ApiResponse.success(
           Booking.fromJson(supabaseRowToJson(Map<String, dynamic>.from(data as Map))),
         );
       } catch (e) {
+        if (e.toString().contains('TimeoutException')) {
+          return ApiResponse.error('Connection timed out.');
+        }
         return ApiResponse.error('Failed to load booking: $e');
       }
     }
@@ -163,11 +173,15 @@ class BookingService {
             .from('bookings')
             .insert(row)
             .select(_kBookingJoin)
-            .single();
+            .single()
+            .timeout(const Duration(seconds: 15));
         return ApiResponse.success(
           Booking.fromJson(supabaseRowToJson(Map<String, dynamic>.from(data as Map))),
         );
       } catch (e) {
+        if (e.toString().contains('TimeoutException')) {
+          return ApiResponse.error('Booking creation timed out. Please check your connection.');
+        }
         return ApiResponse.error('Failed to create booking: $e');
       }
     }
@@ -220,20 +234,22 @@ class BookingService {
           }
         }
 
-        // Step 1: Update the record
-        await _sb.from('bookings').update(updates).eq('id', id);
-
-        // Step 2: Re-fetch with full join (avoids the broken chained .select() issue)
+        // Step 1 & 2: Update and re-fetch with full join in a single round-trip
         final data = await _sb
             .from('bookings')
-            .select(_kBookingJoin)
+            .update(updates)
             .eq('id', id)
-            .single();
+            .select(_kBookingJoin)
+            .single()
+            .timeout(const Duration(seconds: 15));
 
         return ApiResponse.success(
           Booking.fromJson(supabaseRowToJson(Map<String, dynamic>.from(data as Map))),
         );
       } catch (e) {
+        if (e.toString().contains('TimeoutException')) {
+          return ApiResponse.error('Update timed out. Please check your connection.');
+        }
         return ApiResponse.error('Failed to update booking: $e');
       }
     }

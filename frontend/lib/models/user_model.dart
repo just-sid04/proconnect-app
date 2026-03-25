@@ -113,8 +113,8 @@ class Location {
       city: json['city'] ?? '',
       state: json['state'] ?? '',
       zipCode: json['zipCode'] ?? '',
-      latitude: json['latitude']?.toDouble(),
-      longitude: json['longitude']?.toDouble(),
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
     );
   }
 

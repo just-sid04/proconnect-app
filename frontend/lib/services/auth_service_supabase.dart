@@ -16,44 +16,6 @@ class AuthServiceSupabase {
 
   bool get _useSupabase => AppConstants.useSupabase;
 
-  Future<void> _syncBackendSession({
-    required String name,
-    required String email,
-    required String password,
-    required String role,
-    String? phone,
-    app.Location? location,
-  }) async {
-    // Keep backend JWT/session in sync for admin and legacy endpoints in hybrid mode.
-    final registerResponse = await _api.post('/auth/register', body: {
-      'name': name,
-      'email': email,
-      'password': password,
-      'role': role,
-      'phone': phone,
-      'location': location?.toJson(),
-    });
-
-    if (registerResponse.success) {
-      final token = registerResponse.data['token']?.toString();
-      if (token != null && token.isNotEmpty) {
-        await _api.setToken(token);
-      }
-      return;
-    }
-
-    // If user already exists, login instead and refresh backend token.
-    final loginResponse = await _api.post('/auth/login', body: {
-      'email': email,
-      'password': password,
-    });
-    if (loginResponse.success) {
-      final token = loginResponse.data['token']?.toString();
-      if (token != null && token.isNotEmpty) {
-        await _api.setToken(token);
-      }
-    }
-  }
 
   app.User _profileToUser(Map<String, dynamic> profile, String email) {
     final loc = profile['location'];
@@ -85,6 +47,7 @@ class AuthServiceSupabase {
         await _supabase.auth.signUp(
           email: email,
           password: password,
+          emailRedirectTo: 'proconnect://confirm',
           data: {
             'name': name,
             'phone': phone ?? '',
@@ -103,14 +66,6 @@ class AuthServiceSupabase {
         final profile = await _getProfile(session.user.id);
         if (profile != null) {
           final user = _profileToUser(profile, session.user.email ?? email);
-          await _syncBackendSession(
-            name: name,
-            email: email,
-            password: password,
-            role: role,
-            phone: phone,
-            location: location,
-          );
           await _saveUser(user);
           return ApiResponse.success(user, message: 'Account created successfully!');
         }
@@ -182,14 +137,6 @@ class AuthServiceSupabase {
         final profile = await _getProfile(session.user.id);
         if (profile != null) {
           final app.User user = _profileToUser(profile, session.user.email ?? email);
-          await _syncBackendSession(
-            name: user.name,
-            email: email,
-            password: password,
-            role: user.role,
-            phone: user.phone,
-            location: user.location,
-          );
           await _saveUser(user);
           return ApiResponse.success(user, message: 'Login successful!');
         }

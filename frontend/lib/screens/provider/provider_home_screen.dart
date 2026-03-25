@@ -236,144 +236,178 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
           // ── Gradient Header ──────────────────────────────────────────
           SliverToBoxAdapter(child: _buildHeader(auth, provider)),
 
-          // ── KPI cards ────────────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: Row(children: [
-                Expanded(
-                    child: _KpiCard(
-                        label: 'Pending',
-                        value: '${pending.length}',
-                        icon: Icons.pending_actions_rounded,
-                        color: AppTheme.warningColor)),
-                const SizedBox(width: 10),
-                Expanded(
-                    child: _KpiCard(
-                        label: 'Active',
-                        value: '${active.length}',
-                        icon: Icons.construction_rounded,
-                        color: AppTheme.primaryColor)),
-                const SizedBox(width: 10),
-                Expanded(
-                    child: _KpiCard(
-                        label: 'Done',
-                        value: '${completed.length}',
-                        icon: Icons.check_circle_rounded,
-                        color: AppTheme.successColor)),
-              ]),
+          // --- NON-BLOCKING LOADING INDICATOR ---
+          if (bp.isLoading && bp.bookings.isNotEmpty)
+            const SliverToBoxAdapter(
+              child: LinearProgressIndicator(
+                backgroundColor: Colors.transparent,
+                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.accentColor),
+                minHeight: 2,
+              ),
             ),
-          ),
 
-          // ── Quick actions ─────────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: Row(children: [
-                Expanded(
-                    child: _ActionBtn(
-                        icon: Icons.calendar_today_rounded,
-                        label: 'Bookings',
-                        color: AppTheme.primaryColor,
-                        onTap: widget.openBookings)),
-                const SizedBox(width: 10),
-                Expanded(
-                    child: _ActionBtn(
-                        icon: Icons.access_time_rounded,
-                        label: 'Schedule',
-                        color: AppTheme.accentColor,
-                        onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const ScheduleScreen())))),
-                const SizedBox(width: 10),
-                Expanded(
-                    child: _ActionBtn(
-                        icon: Icons.event_busy_rounded,
-                        label: 'Holidays',
-                        color: const Color(0xFF7C3AED),
-                        onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const BlockedDatesScreen())))),
-              ]),
-            ),
-          ),
-
-          // ── Pending Requests ──────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-              child: Row(children: [
-                Expanded(
-                    child: Text('New Requests',
-                        style: GoogleFonts.inter(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.textPrimary))),
-                if (pending.isNotEmpty)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: AppTheme.warningColor.withAlpha(30),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text('${pending.length} new',
-                        style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.warningColor)),
+          if (bp.isLoading && bp.bookings.isEmpty)
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
+            )
+          else if (bp.error != null && bp.bookings.isEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.error_outline_rounded, color: AppTheme.errorColor, size: 48),
+                      const SizedBox(height: 16),
+                      Text(bp.error!, textAlign: TextAlign.center, style: GoogleFonts.inter(color: AppTheme.textSecondary)),
+                      const SizedBox(height: 24),
+                      ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
+                    ],
                   ),
-              ]),
-            ),
-          ),
-          if (pending.isEmpty)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _EmptyBox(message: 'No new booking requests'),
+                ),
               ),
             )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                (_, i) => _PendingCard(booking: pending[i]),
-                childCount: pending.length,
-              )),
-            ),
-
-          // ── Active Jobs ───────────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-              child: Text('Active Jobs',
-                  style: GoogleFonts.inter(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary)),
-            ),
-          ),
-          if (active.isEmpty)
-            const SliverToBoxAdapter(
+          else ...[
+            // ── KPI cards ────────────────────────────────────────────────
+            SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: _EmptyBox(message: 'No active jobs right now'),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: Row(children: [
+                  Expanded(
+                      child: _KpiCard(
+                          label: 'Pending',
+                          value: '${pending.length}',
+                          icon: Icons.pending_actions_rounded,
+                          color: AppTheme.warningColor)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                      child: _KpiCard(
+                          label: 'Active',
+                          value: '${active.length}',
+                          icon: Icons.construction_rounded,
+                          color: AppTheme.primaryColor)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                      child: _KpiCard(
+                          label: 'Done',
+                          value: '${completed.length}',
+                          icon: Icons.check_circle_rounded,
+                          color: AppTheme.successColor)),
+                ]),
               ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                (_, i) => _ActiveJobCard(booking: active[i]),
-                childCount: active.length,
-              )),
             ),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 28)),
+            // ── Quick actions ─────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: Row(children: [
+                  Expanded(
+                      child: _ActionBtn(
+                          icon: Icons.calendar_today_rounded,
+                          label: 'Bookings',
+                          color: AppTheme.primaryColor,
+                          onTap: widget.openBookings)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                      child: _ActionBtn(
+                          icon: Icons.access_time_rounded,
+                          label: 'Schedule',
+                          color: AppTheme.accentColor,
+                          onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const ScheduleScreen())))),
+                  const SizedBox(width: 10),
+                  Expanded(
+                      child: _ActionBtn(
+                          icon: Icons.event_busy_rounded,
+                          label: 'Holidays',
+                          color: const Color(0xFF7C3AED),
+                          onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const BlockedDatesScreen())))),
+                ]),
+              ),
+            ),
+
+            // ── Pending Requests ──────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
+                child: Row(children: [
+                  Expanded(
+                      child: Text('New Requests',
+                          style: GoogleFonts.inter(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary))),
+                  if (pending.isNotEmpty)
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppTheme.warningColor.withAlpha(30),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text('${pending.length} new',
+                          style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.warningColor)),
+                    ),
+                ]),
+              ),
+            ),
+            if (pending.isEmpty)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: _EmptyBox(message: 'No new booking requests'),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                  (_, i) => _PendingCard(booking: pending[i]),
+                  childCount: pending.length,
+                )),
+              ),
+
+            // ── Active Jobs ───────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
+                child: Text('Active Jobs',
+                    style: GoogleFonts.inter(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary)),
+              ),
+            ),
+            if (active.isEmpty)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: _EmptyBox(message: 'No active jobs right now'),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                  (_, i) => _ActiveJobCard(booking: active[i]),
+                  childCount: active.length,
+                )),
+              ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 28)),
+          ],
         ],
       ),
     );

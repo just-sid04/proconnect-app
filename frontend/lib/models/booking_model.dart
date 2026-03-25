@@ -60,7 +60,7 @@ class Booking {
       serviceLocation: Location.fromJson(json['serviceLocation'] ?? {}),
       scheduledDate: json['scheduledDate'] ?? '',
       scheduledTime: json['scheduledTime'] ?? '',
-      estimatedDuration: json['estimatedDuration'] ?? 2,
+      estimatedDuration: (json['estimatedDuration'] as num?)?.toInt() ?? 2,
       price: Price.fromJson(json['price'] ?? {}),
       notes: json['notes'] ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
@@ -107,6 +107,54 @@ class Booking {
       'cancelledAt': cancelledAt?.toIso8601String(),
       'cancellationReason': cancellationReason,
     };
+  }
+
+  Booking copyWith({
+    String? id,
+    String? customerId,
+    String? providerId,
+    String? categoryId,
+    String? status,
+    String? description,
+    Location? serviceLocation,
+    String? scheduledDate,
+    String? scheduledTime,
+    int? estimatedDuration,
+    Price? price,
+    String? notes,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? acceptedAt,
+    DateTime? startedAt,
+    DateTime? completedAt,
+    DateTime? cancelledAt,
+    String? cancellationReason,
+    User? customer,
+    ServiceProvider? provider,
+  }) {
+    return Booking(
+      id: id ?? this.id,
+      customerId: customerId ?? this.customerId,
+      providerId: providerId ?? this.providerId,
+      categoryId: categoryId ?? this.categoryId,
+      status: status ?? this.status,
+      description: description ?? this.description,
+      serviceLocation: serviceLocation ?? this.serviceLocation,
+      scheduledDate: scheduledDate ?? this.scheduledDate,
+      scheduledTime: scheduledTime ?? this.scheduledTime,
+      estimatedDuration: estimatedDuration ?? this.estimatedDuration,
+      price: price ?? this.price,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      acceptedAt: acceptedAt ?? this.acceptedAt,
+      startedAt: startedAt ?? this.startedAt,
+      completedAt: completedAt ?? this.completedAt,
+      cancelledAt: cancelledAt ?? this.cancelledAt,
+      cancellationReason: cancellationReason ?? this.cancellationReason,
+      customer: customer ?? this.customer,
+      provider: provider ?? this.provider,
+    );
   }
 
   bool get isPending => status == 'pending';
@@ -208,10 +256,10 @@ class Price {
 
   factory Price.fromJson(Map<String, dynamic> json) {
     return Price(
-      hourlyRate: (json['hourlyRate'] as num?)?.toDouble() ?? 0,
-      estimatedHours: json['estimatedHours'] ?? 0,
-      totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0,
-      materialsCost: (json['materialsCost'] as num?)?.toDouble() ?? 0,
+      hourlyRate: (json['hourlyRate'] as num?)?.toDouble() ?? 0.0,
+      estimatedHours: (json['estimatedHours'] as num?)?.toInt() ?? 0,
+      totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0.0,
+      materialsCost: (json['materialsCost'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
