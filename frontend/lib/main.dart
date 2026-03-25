@@ -6,6 +6,7 @@ import 'providers/auth_provider.dart';
 import 'providers/booking_provider.dart';
 import 'providers/provider_provider.dart';
 import 'providers/review_provider.dart';
+import 'providers/chat_provider.dart';
 
 import 'screens/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
@@ -45,6 +46,15 @@ class ProConnectApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BookingProvider()),
         ChangeNotifierProvider(create: (_) => ProviderProvider()),
         ChangeNotifierProvider(create: (_) => ReviewProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, ChatProvider?>(
+          create: (_) => null,
+          update: (_, auth, previous) {
+            final userId = auth.user?.id;
+            if (userId == null) return null;
+            if (previous?.userId == userId) return previous;
+            return ChatProvider(userId);
+          },
+        ),
       ],
       child: _AppWithAuthWiring(),
     );

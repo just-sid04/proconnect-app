@@ -12,6 +12,8 @@ import 'provider_profile_screen.dart';
 import 'schedule_screen.dart';
 import 'blocked_dates_screen.dart';
 import '../chat_screen.dart';
+import '../common/messages_list_screen.dart';
+import '../../providers/chat_provider.dart';
 
 class ProviderHomeScreen extends StatefulWidget {
   const ProviderHomeScreen({super.key});
@@ -35,9 +37,10 @@ class _ProviderHomeScreenState extends State<ProviderHomeScreen> {
     final screens = [
       ProviderDashboardTab(
         openBookings: () => _onTabTap(1),
-        openProfile: () => _onTabTap(3),
+        openProfile: () => _onTabTap(4),
       ),
       const ProviderBookingsScreen(),
+      const MessagesListScreen(),
       const EarningsScreen(),
       const ProviderProfileScreen(),
     ];
@@ -69,6 +72,11 @@ class _ProviderNavBar extends StatelessWidget {
       icon: Icons.calendar_today_outlined,
       activeIcon: Icons.calendar_today_rounded,
       label: 'Bookings'
+    ),
+    (
+      icon: Icons.chat_bubble_outline_rounded,
+      activeIcon: Icons.chat_bubble_rounded,
+      label: 'Messages'
     ),
     (
       icon: Icons.account_balance_wallet_outlined,
@@ -107,29 +115,69 @@ class _ProviderNavBar extends StatelessWidget {
                 return GestureDetector(
                   onTap: () => onTap(i),
                   behavior: HitTestBehavior.opaque,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOut,
-                    padding: EdgeInsets.symmetric(
-                        horizontal: active ? 18 : 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      gradient: active ? AppTheme.primaryGradient : null,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Row(children: [
-                      Icon(active ? item.activeIcon : item.icon,
-                          size: 22,
-                          color:
-                              active ? Colors.white : AppTheme.textSecondary),
-                      if (active) ...[
-                        const SizedBox(width: 6),
-                        Text(item.label,
-                            style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white)),
-                      ],
-                    ]),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOut,
+                        padding: EdgeInsets.symmetric(
+                            horizontal: active ? 18 : 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          gradient: active ? AppTheme.primaryGradient : null,
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Row(children: [
+                          Icon(active ? item.activeIcon : item.icon,
+                              size: 22,
+                              color:
+                                  active ? Colors.white : AppTheme.textSecondary),
+                          if (active) ...[
+                            const SizedBox(width: 6),
+                            Text(item.label,
+                                style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white)),
+                          ],
+                        ]),
+                      ),
+                      // Notification badge for Messages (index 2)
+                      if (i == 2 && !active)
+                        Consumer<ChatProvider?>(
+                          builder: (context, chat, _) {
+                            final count = chat?.unreadConversationsCount ?? 0;
+                            if (count > 0) {
+                              return Positioned(
+                                top: -4,
+                                right: -4,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: AppTheme.errorColor,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 16,
+                                    minHeight: 16,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '$count',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                    ],
                   ),
                 );
               }),

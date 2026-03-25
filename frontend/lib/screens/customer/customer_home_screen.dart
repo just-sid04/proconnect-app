@@ -12,6 +12,8 @@ import 'my_bookings_screen.dart';
 import 'profile_screen.dart';
 import 'provider_details_screen.dart';
 import '../chat_screen.dart';
+import '../common/messages_list_screen.dart';
+import '../../providers/chat_provider.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({super.key});
@@ -33,6 +35,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       ),
       const BrowseProvidersScreen(),
       const MyBookingsScreen(),
+      const MessagesListScreen(),
       const ProfileScreen(),
     ];
 
@@ -67,6 +70,11 @@ class _FloatingNavBar extends StatelessWidget {
       label: 'Bookings'
     ),
     (
+      icon: Icons.chat_bubble_outline_rounded,
+      activeIcon: Icons.chat_bubble_rounded,
+      label: 'Messages'
+    ),
+    (
       icon: Icons.person_outline,
       activeIcon: Icons.person_rounded,
       label: 'Profile'
@@ -98,30 +106,70 @@ class _FloatingNavBar extends StatelessWidget {
                 return GestureDetector(
                   onTap: () => onTap(i),
                   behavior: HitTestBehavior.opaque,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOut,
-                    padding: EdgeInsets.symmetric(
-                        horizontal: active ? 20 : 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      gradient: active ? AppTheme.primaryGradient : null,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Row(children: [
-                      Icon(
-                        active ? item.activeIcon : item.icon,
-                        size: 22,
-                        color: active ? Colors.white : AppTheme.textSecondary,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOut,
+                        padding: EdgeInsets.symmetric(
+                            horizontal: active ? 20 : 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          gradient: active ? AppTheme.primaryGradient : null,
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Row(children: [
+                          Icon(
+                            active ? item.activeIcon : item.icon,
+                            size: 22,
+                            color: active ? Colors.white : AppTheme.textSecondary,
+                          ),
+                          if (active) ...[
+                            const SizedBox(width: 6),
+                            Text(item.label,
+                                style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white)),
+                          ],
+                        ]),
                       ),
-                      if (active) ...[
-                        const SizedBox(width: 6),
-                        Text(item.label,
-                            style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white)),
-                      ],
-                    ]),
+                      // Notification badge for Messages (index 3)
+                      if (i == 3 && !active)
+                        Consumer<ChatProvider?>(
+                          builder: (context, chat, _) {
+                            final count = chat?.unreadConversationsCount ?? 0;
+                            if (count > 0) {
+                              return Positioned(
+                                top: -4,
+                                right: -4,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: AppTheme.errorColor,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 16,
+                                    minHeight: 16,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '$count',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                    ],
                   ),
                 );
               }),

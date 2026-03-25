@@ -3,6 +3,7 @@ class Message {
   final String bookingId;
   final String senderId;
   final String text;
+  final bool isRead;
   final DateTime createdAt;
 
   Message({
@@ -10,6 +11,7 @@ class Message {
     required this.bookingId,
     required this.senderId,
     required this.text,
+    required this.isRead,
     required this.createdAt,
   });
 
@@ -19,6 +21,7 @@ class Message {
       bookingId: json['booking_id'] as String,
       senderId: json['sender_id'] as String,
       text: json['text'] as String,
+      isRead: json['is_read'] as bool? ?? false,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }

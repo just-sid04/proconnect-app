@@ -7,6 +7,7 @@ import '../models/message_model.dart';
 import '../providers/auth_provider.dart';
 import '../services/chat_service.dart';
 import '../utils/theme.dart';
+import '../providers/chat_provider.dart';
 
 class ChatScreen extends StatefulWidget {
   final String bookingId;
@@ -25,6 +26,17 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _msgController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cp = Provider.of<ChatProvider?>(context, listen: false);
+      if (cp != null) {
+        cp.markAsRead(widget.bookingId);
+      }
+    });
+  }
 
   @override
   void dispose() {
