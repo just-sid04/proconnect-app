@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/review_provider.dart';
 import '../../utils/theme.dart';
+import '../chat_screen.dart';
 import 'provider_details_screen.dart';
 
 class BookingDetailsScreen extends StatefulWidget {
@@ -221,9 +222,29 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                     subtitle: Text(
                       booking.provider?.category?.name ?? 'Service Provider',
                     ),
-                    trailing: booking.provider?.isVerified == true
-                        ? const Icon(Icons.verified, color: AppTheme.primaryColor)
-                        : const Icon(Icons.chevron_right),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (booking.provider != null)
+                          IconButton(
+                            icon: const Icon(Icons.chat_bubble_outline, color: AppTheme.primaryColor),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ChatScreen(
+                                    bookingId: booking.id,
+                                    otherUserName: booking.provider!.displayName,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        booking.provider?.isVerified == true
+                            ? const Icon(Icons.verified, color: AppTheme.primaryColor)
+                            : const Icon(Icons.chevron_right),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),

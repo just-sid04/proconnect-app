@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/upload_service.dart';
 import '../../utils/theme.dart';
 import '../../utils/constants.dart';
 import '../../widgets/custom_button.dart';
@@ -25,6 +27,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   bool _obscurePass = true;
   bool _obscureConfirm = true;
   bool _agreeToTerms = false;
+  XFile? _selectedImage;
   late AnimationController _animCtrl;
   late Animation<double> _fadeIn;
 
@@ -50,6 +53,13 @@ class _RegisterScreenState extends State<RegisterScreen>
     super.dispose();
   }
 
+  Future<void> _pickImage() async {
+    final image = await UploadService.pickImage();
+    if (image != null) {
+      setState(() => _selectedImage = image);
+    }
+  }
+
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -72,6 +82,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       password: _passCtrl.text,
       role: widget.role,
       phone: _phoneCtrl.text.trim(),
+      profileImage: _selectedImage,
     );
     if (!mounted) return;
     if (success) {
@@ -206,7 +217,47 @@ class _RegisterScreenState extends State<RegisterScreen>
                         ]),
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
+
+                      // Photo Picker
+                      Center(
+                        child: Stack(children: [
+                          GestureDetector(
+                            onTap: _pickImage,
+                            child: Container(
+                              width: 100, height: 100,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppTheme.navySurface,
+                                border: Border.all(color: accentCol, width: 2),
+                                boxShadow: AppTheme.glowShadow(accentCol, blur: 20, spread: -5),
+                              ),
+                              child: _selectedImage != null
+                                  ? ClipOval(child: Image.network(_selectedImage!.path, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.person, size: 50, color: AppTheme.textHint)))
+                                  : Icon(Icons.person_add_rounded, size: 40, color: accentCol),
+                            ),
+                          ),
+                          Positioned(bottom: 0, right: 0,
+                            child: GestureDetector(
+                              onTap: _pickImage,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: accentCol,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: AppTheme.navyDeep, width: 2),
+                                ),
+                                child: const Icon(Icons.camera_alt_rounded, size: 14, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ]),
+                      ),
+                      const SizedBox(height: 8),
+                      Center(child: Text('Optional Profile Photo',
+                        style: GoogleFonts.inter(fontSize: 12, color: AppTheme.textHint))),
+
+                      const SizedBox(height: 32),
 
                       // Form
                       Form(

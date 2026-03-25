@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../providers/booking_provider.dart';
+import '../../providers/provider_provider.dart';
 import '../../models/booking_model.dart' as booking_model;
 import '../../utils/theme.dart';
 
@@ -24,6 +25,8 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   int _estimatedDuration = 2;
+  List<String> _availableSlots = [];
+  bool _isLoadingSlots = false;
 
   @override
   void dispose() {
@@ -44,20 +47,36 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
+        _selectedTime = null; // Reset time when date changes
       });
+      _loadAvailableSlots();
     }
   }
 
-  Future<void> _selectTime() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (picked != null) {
+  Future<void> _loadAvailableSlots() async {
+    if (_selectedDate == null) return;
+    setState(() => _isLoadingSlots = true);
+    try {
+      final pp = Provider.of<ProviderProvider>(context, listen: false);
+      final slots = await pp.getAvailableSlots(widget.provider.id, _selectedDate!);
       setState(() {
-        _selectedTime = picked;
+        _availableSlots = slots;
       });
+    } catch (e) {
+      debugPrint('Error loading slots: $e');
+    } finally {
+      if (mounted) setState(() => _isLoadingSlots = false);
     }
+  }
+
+  void _onSlotSelected(String slot) {
+    final parts = slot.split(':');
+    setState(() {
+      _selectedTime = TimeOfDay(
+        hour: int.parse(parts[0]),
+        minute: int.parse(parts[1]),
+      );
+    });
   }
 
   Future<void> _submitBooking() async {
@@ -234,22 +253,25 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: _selectDate,
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: AppTheme.dividerColor),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+            GestureDetector(
+              onTap: _selectDate,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppTheme.dividerColor),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.calendar_today_rounded,
+                        color: AppTheme.primaryColor, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Date',
+                            'Booking Date',
                             style: TextStyle(
                               fontSize: 12,
                               color: AppTheme.textSecondary,
@@ -258,7 +280,8 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                           const SizedBox(height: 4),
                           Text(
                             _selectedDate != null
-                                ? DateFormat('MMM dd, yyyy').format(_selectedDate!)
+                                ? DateFormat('EEEE, MMM dd, yyyy')
+                                    .format(_selectedDate!)
                                 : 'Select Date',
                             style: TextStyle(
                               fontSize: 16,
@@ -271,48 +294,80 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                         ],
                       ),
                     ),
-                  ),
+                    const Icon(Icons.chevron_right, color: AppTheme.textHint),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: _selectTime,
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: AppTheme.dividerColor),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Time',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppTheme.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _selectedTime != null
-                                ? _selectedTime!.format(context)
-                                : 'Select Time',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: _selectedTime != null
-                                  ? AppTheme.textPrimary
-                                  : AppTheme.textHint,
-                            ),
-                          ),
-                        ],
-                      ),
+              ),
+            ),
+            if (_selectedDate != null) ...[
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  const Text(
+                    'Available Slots',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const Spacer(),
+                  if (_isLoadingSlots)
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppTheme.primaryColor,
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (!_isLoadingSlots && _availableSlots.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Center(
+                    child: Text(
+                      'No slots available for this date.',
+                      style: TextStyle(color: AppTheme.errorColor),
+                    ),
+                  ),
+                )
+              else
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: _availableSlots.map((slot) {
+                    final isSelected = _selectedTime != null &&
+                        _selectedTime!.hour == int.parse(slot.split(':')[0]);
+                    return GestureDetector(
+                      onTap: () => _onSlotSelected(slot),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppTheme.primaryColor
+                              : AppTheme.primaryColor.withAlpha(20),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppTheme.primaryColor
+                                : AppTheme.primaryColor.withAlpha(60),
+                          ),
+                        ),
+                        child: Text(
+                          slot,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : AppTheme.primaryColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
-              ],
-            ),
+            ],
             const SizedBox(height: 24),
             // Duration
             const Text(

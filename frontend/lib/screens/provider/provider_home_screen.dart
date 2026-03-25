@@ -9,6 +9,8 @@ import '../../utils/theme.dart';
 import 'earnings_screen.dart';
 import 'provider_bookings_screen.dart';
 import 'provider_profile_screen.dart';
+import 'schedule_screen.dart';
+import 'blocked_dates_screen.dart';
 
 class ProviderHomeScreen extends StatefulWidget {
   const ProviderHomeScreen({super.key});
@@ -228,17 +230,23 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
                 const SizedBox(width: 10),
                 Expanded(
                     child: _ActionBtn(
-                        icon: Icons.edit_note_rounded,
-                        label: 'Edit Profile',
+                        icon: Icons.access_time_rounded,
+                        label: 'Schedule',
                         color: AppTheme.accentColor,
-                        onTap: widget.openProfile)),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const ScheduleScreen())))),
                 const SizedBox(width: 10),
                 Expanded(
                     child: _ActionBtn(
-                        icon: Icons.share_rounded,
-                        label: 'Share',
+                        icon: Icons.event_busy_rounded,
+                        label: 'Holidays',
                         color: const Color(0xFF7C3AED),
-                        onTap: () => _shareProfile(context, provider))),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const BlockedDatesScreen())))),
               ]),
             ),
           ),
@@ -388,20 +396,6 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
       ]),
     );
   }
-
-  void _shareProfile(BuildContext context, dynamic provider) => showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Share Profile'),
-          content: Text(provider == null
-              ? 'Create your provider profile first.'
-              : 'ProConnect Provider\n\n${provider.displayName}\nID: ${provider.id}\n${provider.category?.name ?? 'Service Provider'}'),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx), child: const Text('Close'))
-          ],
-        ),
-      );
 }
 
 // ─── KPI Card ────────────────────────────────────────────────────────────────

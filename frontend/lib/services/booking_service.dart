@@ -310,4 +310,38 @@ class BookingService {
     }
     return ApiResponse.error(response.message);
   }
+
+  // ─── SUBMIT REVIEW ────────────────────────────────────────────────────────
+
+  Future<ApiResponse<void>> submitReview({
+    required String bookingId,
+    required String providerId,
+    required int rating,
+    required String comment,
+  }) async {
+    if (_useSupabase) {
+      try {
+        final customerId = _sb.auth.currentUser?.id;
+        if (customerId == null) return ApiResponse.error('Not authenticated');
+
+        final row = {
+          'booking_id': bookingId,
+          'customer_id': customerId,
+          'provider_id': providerId,
+          'rating': rating,
+          'comment': comment,
+        };
+
+        // If insert fails due to unique constraint block, it will throw an error
+        await _sb.from('reviews').insert(row);
+        return ApiResponse.success(null);
+      } catch (e) {
+        if (e.toString().contains('duplicate key value')) {
+          return ApiResponse.error('You have already reviewed this booking.');
+        }
+        return ApiResponse.error('Failed to submit review: $e');
+      }
+    }
+    return ApiResponse.error('Only Supabase is supported for reviews.');
+  }
 }

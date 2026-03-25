@@ -1,4 +1,5 @@
 import '../models/provider_model.dart';
+import '../models/review_model.dart';
 import '../utils/constants.dart';
 import '../utils/supabase_mapper.dart';
 import 'api_service.dart';
@@ -378,5 +379,26 @@ class ProviderService {
     }
 
     return ApiResponse.error(response.message);
+  }
+
+  // Get provider reviews
+  Future<ApiResponse<List<Review>>> getProviderReviews(String providerId, {int page = 1, int limit = 10}) async {
+    if (_useSupabase) {
+      try {
+        final data = await _sb
+            .from('reviews')
+            .select('*, customer:profiles!customer_id(*), provider:service_providers!provider_id(*)')
+            .eq('provider_id', providerId)
+            .order('created_at', ascending: false)
+            .range((page - 1) * limit, page * limit - 1);
+        
+        final list = (data as List).map((r) => Review.fromJson(
+            supabaseRowToJson(Map<String, dynamic>.from(r as Map)))).toList();
+        return ApiResponse.success(list);
+      } catch (e) {
+        return ApiResponse.error(e.toString());
+      }
+    }
+    return ApiResponse.error('Not supported without Supabase');
   }
 }

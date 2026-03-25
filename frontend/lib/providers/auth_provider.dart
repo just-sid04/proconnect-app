@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../models/user_model.dart';
 import '../services/auth_service_supabase.dart';
+import '../services/upload_service.dart';
 import '../utils/constants.dart';
 import 'booking_provider.dart';
 
@@ -148,7 +150,7 @@ class AuthProvider extends ChangeNotifier {
     required String password,
     required String role,
     String? phone,
-    Location? location,
+    XFile? profileImage,
   }) async {
     _setLoading(true);
     _error = null;
@@ -160,10 +162,23 @@ class AuthProvider extends ChangeNotifier {
         password: password,
         role: role,
         phone: phone,
-        location: location,
       );
+
       if (response.success) {
         _user = response.data;
+        
+        // ── Upload photo if provided ──────────────────────────────────────────
+        if (profileImage != null && _user != null) {
+          final String? photoUrl = await UploadService.uploadImage(
+            xFile: profileImage,
+            bucket: 'avatars',
+            userId: _user!.id,
+          );
+          if (photoUrl != null) {
+            await updateProfile(profilePhoto: photoUrl);
+          }
+        }
+
         _error = null;
         notifyListeners();
         return true;
@@ -215,6 +230,65 @@ class AuthProvider extends ChangeNotifier {
       return false;
     } finally {
       _setLoading(false);
+    }
+  }
+
+  // ─── Avatar Upload ─────────────────────────────────────────────────────────
+
+  Future<bool> pickAndUploadAvatar() async {
+    if (_user == null) return false;
+    
+    _setLoading(true);
+    _error = null;
+
+    try {
+      // 1. Pick Image (XFile is platform-agnostic)
+      final image = await UploadService.pickImage();
+      if (image == null) {
+        _setLoading(false);
+        return false;
+      }
+
+      // 2. Upload to Supabase Storage
+      final String? photoUrl = await UploadService.uploadImage(
+        xFile: image,
+        bucket: 'avatars',
+        userId: _user!.id,
+      );
+
+      if (photoUrl == null) {
+        _error = 'Failed to upload image';
+        _setLoading(false);
+        return false;
+      }
+
+      // 3. Update Profile with new URL
+      return await updateProfile(profilePhoto: photoUrl);
+    } catch (e) {
+      _error = 'Error: ${e.toString()}';
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  Future<bool> removeAvatar() async {
+    if (_user == null || (_user!.profilePhoto?.isEmpty ?? true)) return false;
+
+    _setLoading(true);
+    _error = null;
+
+    try {
+      final oldPhoto = _user!.profilePhoto!;
+      
+      // 1. Delete from Storage
+      await UploadService.deleteImage(bucket: 'avatars', path: oldPhoto);
+
+      // 2. Update Profile to null
+      return await updateProfile(profilePhoto: '');
+    } catch (e) {
+      _error = 'Error: ${e.toString()}';
+      _setLoading(false);
+      return false;
     }
   }
 

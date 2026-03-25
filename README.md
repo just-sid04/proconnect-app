@@ -1,288 +1,109 @@
-# ProConnect - Smart Local Service Provider Platform
+# 🚀 ProConnect: Smart Local Service Marketplace
 
-A comprehensive cross-platform application that connects people who need services with nearby skilled workers such as electricians, plumbers, appliance repair technicians, computer technicians, tutors, and other local service providers.
+ProConnect is a premium, high-performance cross-platform application designed to bridge the gap between skilled service providers (electricians, plumbers, tutors, etc.) and customers in their local vicinity. 
 
-## Features
-
-### For Customers
-- Browse and search for service providers by category
-- View provider profiles, ratings, and reviews
-- Book services with date, time, and location
-- Track booking status in real-time
-- Rate and review completed services
-- Find nearby providers based on location
-
-### For Service Providers
-- Create and manage service provider profile
-- Add skills, experience, and availability
-- Receive and manage booking requests
-- Accept, start, and complete bookings
-- View earnings and statistics
-- Build reputation through ratings and reviews
-
-### For Admin
-- Dashboard with platform statistics
-- Manage users (customers and providers)
-- Verify provider applications
-- Manage service categories
-- Monitor bookings and transactions
-- Handle reviews and reports
-
-## Tech Stack
-
-### Backend
-- **Node.js** with **Express.js**
-- **JSON file storage** for simplicity
-- **JWT** authentication
-- **bcryptjs** for password hashing
-- RESTful API architecture
-
-### Frontend (Cross-Platform)
-- **Flutter** with **Dart**
-- Works on Android, iOS, Web, and Desktop
-- Material Design principles
-- Provider pattern for state management
-
-### Admin Dashboard
-- **HTML**, **CSS**, **JavaScript**
-- Responsive design
-- Modern UI with Poppins font
-
-## Project Structure
-
-```
-proconnect/
-├── backend/                 # Node.js + Express Backend
-│   ├── data/               # JSON database files
-│   │   ├── users.json
-│   │   ├── providers.json
-│   │   ├── bookings.json
-│   │   ├── reviews.json
-│   │   └── categories.json
-│   ├── middleware/         # Auth, validation, upload
-│   ├── routes/            # API routes
-│   ├── utils/             # Database utilities
-│   ├── server.js          # Main server file
-│   └── package.json
-│
-├── frontend/               # Flutter Application
-│   ├── lib/
-│   │   ├── models/        # Data models
-│   │   ├── providers/     # State management
-│   │   ├── screens/       # UI screens
-│   │   ├── services/      # API services
-│   │   ├── widgets/       # Reusable widgets
-│   │   └── main.dart
-│   └── pubspec.yaml
-│
-├── admin-dashboard/        # HTML Admin Panel
-│   ├── css/
-│   ├── js/
-│   └── index.html
-│
-└── README.md
-```
-
-## Installation & Setup
-
-### Prerequisites
-- Node.js (v16 or higher)
-- Flutter SDK (v3.0 or higher)
-- Dart SDK
-- Android Studio / Xcode (for mobile development)
-
-### Backend Setup
-
-1. Navigate to the backend directory:
-```bash
-cd backend
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Create environment file:
-```bash
-cp .env.example .env
-```
-
-4. Edit `.env` file with your configuration:
-```
-PORT=3000
-NODE_ENV=development
-JWT_SECRET=your-super-secret-key
-ADMIN_EMAIL=admin@proconnect.com
-ADMIN_PASSWORD=admin123
-```
-
-5. Start the server:
-```bash
-# Development mode with auto-reload
-npm run dev
-
-# Production mode
-npm start
-```
-
-The backend API will be available at `http://localhost:3000`
-
-### Flutter Frontend Setup
-
-1. Navigate to the frontend directory:
-```bash
-cd frontend
-```
-
-2. Get Flutter dependencies:
-```bash
-flutter pub get
-```
-
-3. Update API base URL in `lib/utils/constants.dart`:
-```dart
-static const String baseUrl = 'http://localhost:3000/api';
-```
-
-4. Run the app:
-```bash
-# For web
-flutter run -d chrome
-
-# For Android
-flutter run -d android
-
-# For iOS (macOS only)
-flutter run -d ios
-
-# For desktop (Windows/Linux/macOS)
-flutter run -d windows
-flutter run -d linux
-flutter run -d macos
-```
-
-### Admin Dashboard Setup
-
-The admin dashboard is a static HTML/CSS/JS application. Simply open `admin-dashboard/index.html` in a web browser or serve it using any static file server.
-
-```bash
-# Using Python
-python -m http.server 8080
-
-# Using Node.js npx
-npx serve .
-
-# Using PHP
-php -S localhost:8080
-```
-
-Then access the dashboard at `http://localhost:8080/admin-dashboard/`
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `GET /api/auth/me` - Get current user
-- `POST /api/auth/logout` - Logout user
-
-### Users
-- `GET /api/users` - Get all users (admin)
-- `GET /api/users/:id` - Get user by ID
-- `PUT /api/users/:id` - Update user
-- `DELETE /api/users/:id` - Delete user
-
-### Providers
-- `GET /api/providers` - Get all providers
-- `GET /api/providers/nearby` - Get nearby providers
-- `GET /api/providers/:id` - Get provider by ID
-- `POST /api/providers` - Create provider profile
-- `PUT /api/providers/:id` - Update provider
-- `PUT /api/providers/:id/availability` - Update availability
-
-### Bookings
-- `GET /api/bookings` - Get bookings
-- `GET /api/bookings/:id` - Get booking by ID
-- `POST /api/bookings` - Create booking
-- `PUT /api/bookings/:id` - Update booking
-- `PUT /api/bookings/:id/status` - Update booking status
-- `DELETE /api/bookings/:id` - Delete booking
-
-### Reviews
-- `GET /api/reviews` - Get reviews
-- `POST /api/reviews` - Create review
-- `PUT /api/reviews/:id` - Update review
-- `DELETE /api/reviews/:id` - Delete review
-
-### Categories
-- `GET /api/categories` - Get all categories
-- `GET /api/categories/:id` - Get category by ID
-- `POST /api/categories` - Create category (admin)
-- `PUT /api/categories/:id` - Update category (admin)
-- `DELETE /api/categories/:id` - Delete category (admin)
-
-### Admin
-- `GET /api/admin/dashboard` - Get dashboard stats
-- `GET /api/admin/users` - Get all users
-- `GET /api/admin/verifications/pending` - Get pending verifications
-- `PUT /api/admin/providers/:id/verify` - Verify provider
-
-## Default Credentials
-
-### Admin
-- Email: `admin@proconnect.com`
-- Password: `admin123`
-
-### Test Users (from seed data)
-- Customer: `customer@example.com` / any password
-- Provider: `provider@example.com` / any password
-
-## User Flows
-
-### Customer Flow
-1. Register/Login as Customer
-2. Browse service categories
-3. View provider profiles and reviews
-4. Book a service with details
-5. Track booking status
-6. Rate and review after completion
-
-### Provider Flow
-1. Register/Login as Provider
-2. Create provider profile with skills and availability
-3. Wait for admin verification
-4. Receive booking requests
-5. Accept and complete bookings
-6. Build reputation through reviews
-
-### Admin Flow
-1. Login as Admin
-2. View dashboard statistics
-3. Verify new provider applications
-4. Manage users and bookings
-5. Monitor platform activity
-
-## Screenshots
-
-*Screenshots will be added here*
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## License
-
-This project is licensed under the MIT License.
-
-## Support
-
-For support, email support@proconnect.com or join our Slack channel.
+Built with **Flutter** and powered by **Supabase**, ProConnect offers a seamless, real-time experience with a professional design system inspired by modern industry leaders.
 
 ---
 
-Built with ❤️ by the ProConnect Team
+## ✨ Key Features
+
+### 👤 For Customers
+- **Service Discovery**: High-visual category browsing and smart provider search.
+- **Trusted Choices**: Detailed provider profiles with verified ratings and community reviews.
+- **Smart Booking**: One-tap scheduling with date, time, and service location.
+- **Real-time Status**: Live tracking of booking lifecycle (Pending → Accepted → In-Progress → Completed).
+- **Native Experience**: Modern Light Mode UI with smooth micro-animations.
+
+### 🛠️ For Service Providers
+- **Professional Presence**: Native image upload for profile photos (Gallery/Camera).
+- **Business Management**: Real-time dashboard for managing incoming service requests.
+- **Reputation Building**: Showcase skills, experience, and earn through verified customer feedback.
+- **Earnings Tracking**: Monitor productivity and completed jobs directly from the app.
+
+### 🛡️ For Admin
+- **Centralized Command**: Unified dashboard for platform health and statistics.
+- **Provider Verification**: Robust system to verify and onboard skilled professionals.
+- **Platform Integrity**: Manage categories, moderate reviews, and resolve disputes.
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend (Mobile & Web)
+- **Framework**: [Flutter](https://flutter.dev/) (3.x)
+- **State Management**: Provider Pattern
+- **UI/UX**: Custom Premium Design System (Vanilla CSS inspired styling in Flutter)
+- **Native Features**: `image_picker` for cross-platform media selection.
+
+### Backend (BaaS)
+- **Provider**: [Supabase](https://supabase.com/)
+- **Database**: PostgreSQL with Row-Level Security (RLS)
+- **Authentication**: Supabase Auth (Email/Password)
+- **Storage**: Supabase Storage for secure, organized asset management (Avatars bucket).
+- **Real-time**: Postgres CDC for live chat and booking synchronization.
+
+---
+
+## 📂 Project Structure
+
+```text
+proconnect/
+├── frontend/               # Flutter Multi-platform Application
+│   ├── lib/
+│   │   ├── models/        # Type-safe Data Models
+│   │   ├── providers/     # Global State Management
+│   │   ├── screens/       # feature-based UI Screens
+│   │   ├── services/      # Supabase & Upload Logic
+│   │   └── utils/         # Theme, Constants, and Mappers
+│   └── pubspec.yaml       # Flutter Dependencies
+│
+├── supabase/               # Backend-as-a-Code
+│   ├── migrations/        # SQL Version Control (RLS & Schema)
+│   └── seed/              # Development Data
+│
+├── admin-dashboard/        # Modern Admin Interface
+│   ├── js/                # Direct Supabase Client Logic
+│   └── index.html         # Premium Dashboard UI
+│
+└── README.md              # Project Documentation
+```
+
+---
+
+## 🚦 Quick Start
+
+### 1. Backend Setup (Supabase)
+1. Create a free project at [supabase.com](https://supabase.com).
+2. Create a public bucket named `avatars` in **Storage**.
+3. Apply the migrations located in `./supabase/migrations/` using the Supabase SQL Editor.
+
+### 2. Frontend Configuration
+You can pass your Supabase credentials directly via `--dart-define` to keep your environment secure:
+
+```bash
+cd frontend
+flutter run \
+  --dart-define=SUPABASE_URL=https://your-id.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=your-anon-public-key
+```
+
+### 3. Build & Deploy
+- **Android/iOS**: Native mobile builds.
+- **Web**: `flutter build web --release`.
+- **Desktop**: Native Windows/macOS/Linux executables.
+
+---
+
+## 📈 Roadmap & Recent Progress
+
+- [x] **Phase 1**: Legacy Migration (Node.js → Supabase)
+- [x] **Phase 2**: Real-time Chat & Booking Sync
+- [x] **Phase 3**: Premium UI Overhaul (Light Theme)
+- [x] **Phase 4**: Native Image Upload & Storage Policies
+- [x] **Phase 5**: Optimized Registration Flow with Photo Support
+- [ ] **Phase 6**: Google Maps & Geolocation Distance Calculating (Coming Soon)
+
+---
+
+Built with ❤️ by the ProConnect Team.

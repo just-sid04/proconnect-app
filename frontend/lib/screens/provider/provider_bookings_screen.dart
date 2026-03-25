@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models/booking_model.dart';
 import '../../providers/booking_provider.dart';
 import '../../utils/theme.dart';
+import '../chat_screen.dart';
 
 class ProviderBookingsScreen extends StatefulWidget {
   const ProviderBookingsScreen({super.key});
@@ -291,7 +292,25 @@ class _BookingCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                _StatusChip(label: booking.statusDisplay, color: statusColor),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chat_bubble_outline, color: AppTheme.primaryColor, size: 20),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChatScreen(
+                              bookingId: booking.id,
+                              otherUserName: customerName,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    _StatusChip(label: booking.statusDisplay, color: statusColor),
+                  ],
+                ),
               ],
             ),
             const Divider(height: 20),

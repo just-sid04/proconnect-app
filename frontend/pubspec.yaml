@@ -44,6 +44,9 @@ dependencies:
   # Charts
   fl_chart: ^0.66.0
   
+  # Calendar
+  table_calendar: ^3.0.9
+
   # Supabase
   supabase_flutter: ^2.8.0
 

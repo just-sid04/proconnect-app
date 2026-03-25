@@ -281,25 +281,64 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Future<void> _showPhotoDialog(BuildContext context, AuthProvider auth) async {
-    final ctrl = TextEditingController(text: auth.user?.profilePhoto ?? '');
-    final saved = await showDialog<bool>(
+    final hasPhoto = auth.user?.profilePhoto?.isNotEmpty ?? false;
+
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Profile Photo URL'),
-        content: TextField(controller: ctrl, decoration: const InputDecoration(
-            labelText: 'Image URL', hintText: 'https://example.com/photo.jpg')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Update')),
-        ],
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        decoration: const BoxDecoration(
+          color: AppTheme.navySurface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            width: 40, height: 4,
+            margin: const EdgeInsets.only(bottom: 20),
+            decoration: BoxDecoration(
+                color: AppTheme.dividerColor,
+                borderRadius: BorderRadius.circular(2)),
+          ),
+          Text('Profile Photo',
+              style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary)),
+          const SizedBox(height: 20),
+          ListTile(
+            leading: const Icon(Icons.photo_library_rounded,
+                color: AppTheme.primaryColor),
+            title: const Text('Update from Gallery'),
+            onTap: () async {
+              Navigator.pop(ctx);
+              final success = await auth.pickAndUploadAvatar();
+              _showResult(context, success, auth.error);
+            },
+          ),
+          if (hasPhoto)
+            ListTile(
+              leading: const Icon(Icons.delete_outline_rounded,
+                  color: AppTheme.errorColor),
+              title: const Text('Remove Current Photo',
+                  style: TextStyle(color: AppTheme.errorColor)),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final success = await auth.removeAvatar();
+                _showResult(context, success, auth.error);
+              },
+            ),
+          const SizedBox(height: 8),
+        ]),
       ),
     );
-    if (saved != true || !context.mounted) return;
-    final ok = await auth.updateProfile(profilePhoto: ctrl.text.trim());
+  }
+
+  void _showResult(BuildContext context, bool success, String? error) {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(ok ? 'Photo updated!' : (auth.error ?? 'Failed')),
-      backgroundColor: ok ? AppTheme.successColor : AppTheme.errorColor,
+      content: Text(success ? 'Photo updated!' : (error ?? 'Action cancelled')),
+      backgroundColor: success ? AppTheme.successColor : AppTheme.errorColor,
     ));
   }
 

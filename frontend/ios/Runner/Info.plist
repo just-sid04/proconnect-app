@@ -66,5 +66,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>ProConnect needs access to your photo library to let you upload a profile photo and portfolio images.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>ProConnect needs access to your camera to let you take a profile photo.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>ProConnect needs access to your microphone (optional for some media pickers).</string>
 </dict>
 </plist>
