@@ -11,6 +11,7 @@ import 'browse_providers_screen.dart';
 import 'my_bookings_screen.dart';
 import 'profile_screen.dart';
 import 'provider_details_screen.dart';
+import '../chat_screen.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({super.key});
@@ -789,6 +790,16 @@ class _BookingTile extends StatelessWidget {
             child: Text(booking.statusDisplay ?? 'Pending',
                 style: GoogleFonts.inter(
                     fontSize: 11, fontWeight: FontWeight.w700, color: color)),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline_rounded, color: AppTheme.primaryColor),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(
+              builder: (_) => ChatScreen(
+                bookingId: booking.id,
+                otherUserName: booking.provider?.displayName ?? 'Provider',
+              )
+            )),
           ),
         ]),
       ),

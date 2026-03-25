@@ -11,6 +11,7 @@ import 'provider_bookings_screen.dart';
 import 'provider_profile_screen.dart';
 import 'schedule_screen.dart';
 import 'blocked_dates_screen.dart';
+import '../chat_screen.dart';
 
 class ProviderHomeScreen extends StatefulWidget {
   const ProviderHomeScreen({super.key});
@@ -535,6 +536,13 @@ class _PendingCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                     color: AppTheme.warningColor)),
           ),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: const Icon(Icons.chat_bubble_outline_rounded, color: AppTheme.primaryColor),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(
+              builder: (_) => ChatScreen(bookingId: booking.id, otherUserName: booking.customer?.name ?? 'Customer')
+            )),
+          ),
         ]),
         if ((booking.description as String).isNotEmpty) ...[
           const SizedBox(height: 10),
@@ -644,6 +652,13 @@ class _ActiveJobCard extends StatelessWidget {
               style: GoogleFonts.inter(
                   fontSize: 12, color: AppTheme.textSecondary)),
         ])),
+        IconButton(
+          icon: const Icon(Icons.chat_bubble_outline_rounded, color: AppTheme.primaryColor),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(
+            builder: (_) => ChatScreen(bookingId: booking.id, otherUserName: booking.customer?.name ?? 'Customer')
+          )),
+        ),
+        const SizedBox(width: 8),
         GestureDetector(
           onTap: () => isAccepted
               ? bp.startBooking(booking.id)
