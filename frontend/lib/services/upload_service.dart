@@ -22,6 +22,41 @@ class UploadService {
     }
   }
 
+  /// Pick multiple images from the gallery
+  static Future<List<XFile>> pickMultipleImages() async {
+    try {
+      final List<XFile> images = await _picker.pickMultiImage(
+        imageQuality: 70,
+        maxWidth: 1000,
+      );
+      return images;
+    } catch (e) {
+      debugPrint('Error picking multiple images: $e');
+      return [];
+    }
+  }
+
+  /// Upload multiple images to Supabase Storage
+  static Future<List<String>> uploadImages({
+    required List<XFile> xFiles,
+    required String bucket,
+    required String userId,
+    String? folderPrefix,
+  }) async {
+    final List<String> urls = [];
+    for (int i = 0; i < xFiles.length; i++) {
+        final String name = '${folderPrefix ?? "img"}_${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
+        final url = await uploadImage(
+            xFile: xFiles[i],
+            bucket: bucket,
+            userId: userId,
+            fileName: name,
+        );
+        if (url != null) urls.add(url);
+    }
+    return urls;
+  }
+
   /// Upload an image to Supabase Storage
   static Future<String?> uploadImage({
     required XFile xFile,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/review_model.dart';
 import '../services/review_service.dart';
+import '../services/upload_service.dart';
+import 'package:image_picker/image_picker.dart';
 import '../utils/constants.dart';
 
 class ReviewProvider extends ChangeNotifier {
@@ -94,16 +96,30 @@ class ReviewProvider extends ChangeNotifier {
     required String providerId,
     required int rating,
     String? comment,
+    List<XFile> images = const [],
   }) async {
     _setLoading(true);
     _error = null;
 
     try {
+      // 1. Upload images if any
+      List<String> imageUrls = [];
+      if (images.isNotEmpty) {
+        imageUrls = await UploadService.uploadImages(
+          xFiles: images,
+          bucket: 'reviews',
+          userId: providerId, // Store under provider's folder for better organization
+          folderPrefix: 'rev_${bookingId.substring(0, 8)}',
+        );
+      }
+
+      // 2. Create review record
       final response = await _reviewService.createReview(
         bookingId: bookingId,
         providerId: providerId,
         rating: rating,
         comment: comment,
+        images: imageUrls,
       );
 
       if (response.success) {
@@ -113,6 +129,43 @@ class ReviewProvider extends ChangeNotifier {
         return true;
       } else {
         _error = response.message;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _error = ErrorMessages.genericError;
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Respond to review
+  Future<bool> respondToReview({
+    required String reviewId,
+    required String response,
+  }) async {
+    _setLoading(true);
+    _error = null;
+
+    try {
+      final apiResponse = await _reviewService.updateReview(
+        id: reviewId,
+        providerResponse: response,
+      );
+
+      if (apiResponse.success) {
+        // Update local list
+        final index = _reviews.indexWhere((r) => r.id == reviewId);
+        if (index != -1) {
+          _reviews[index] = apiResponse.data!;
+        }
+        _error = null;
+        notifyListeners();
+        return true;
+      } else {
+        _error = apiResponse.message;
         notifyListeners();
         return false;
       }

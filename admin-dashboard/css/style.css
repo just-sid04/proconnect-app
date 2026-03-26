@@ -1291,3 +1291,84 @@ input:checked + .toggle-slider::before { transform: translateX(20px); background
     .header { padding: 0 16px; }
     .revenue-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Verification Gallery ─────────────────────────────────────── */
+.verification-gallery {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px dashed var(--divider);
+}
+
+.verification-gallery h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.verification-gallery h4 i {
+    color: var(--primary);
+}
+
+.doc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.doc-item {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--divider);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.doc-item:hover {
+    transform: scale(1.02);
+    border-color: var(--primary);
+}
+
+.doc-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.doc-item .overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.doc-item:hover .overlay {
+    opacity: 1;
+}
+
+.doc-item .overlay i {
+    color: white;
+    font-size: 20px;
+}
+
+.no-docs-msg {
+    margin-top: 20px;
+    padding: 16px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+

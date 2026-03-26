@@ -591,6 +591,32 @@ window.viewProvider = async function(id) {
         const cat = p.categories || p['categories!category_id'] || {};
         const name = profile.name || 'Unknown';
         const vstatus = p.verification_status;
+
+        // Fetch signed URLs for documents if any
+        let docGalleryHtml = '';
+        if (p.documents && p.documents.length > 0) {
+            try {
+                const signedUrls = await getSignedUrls('verifications', p.documents);
+                docGalleryHtml = `
+                    <div class="verification-gallery">
+                        <h4><i class="fas fa-id-card"></i> Verification Documents</h4>
+                        <div class="doc-grid">
+                            ${signedUrls.map(url => `
+                                <div class="doc-item" onclick="window.open('${url}', '_blank')">
+                                    <img src="${url}" alt="Verification Document">
+                                    <div class="overlay"><i class="fas fa-search-plus"></i></div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>`;
+            } catch (err) {
+                console.error('Error fetching signed URLs:', err);
+                docGalleryHtml = `<p style="color:var(--error);font-size:12px;margin-top:20px;">Error loading verification documents.</p>`;
+            }
+        } else {
+            docGalleryHtml = `<div class="no-docs-msg"><i class="fas fa-info-circle"></i> No verification documents uploaded yet.</div>`;
+        }
+
         showModal('Provider Details', `
             <div style="text-align:center;margin-bottom:20px;">
                 ${getInitialsAvatar(name, 64)}
@@ -608,13 +634,15 @@ window.viewProvider = async function(id) {
                 <div class="detail-item"><span>Joined</span><strong>${formatDate(p.created_at)}</strong></div>
             </div>
             ${p.description ? `<div class="detail-item" style="margin-top:12px;"><span>Bio</span><p style="margin-top:4px;color:#475569;">${p.description}</p></div>` : ''}
-            ${p.skills?.length ? `<div class="detail-item" style="margin-top:12px;"><span>Skills</span><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">${p.skills.map(s=>`<span class="role-badge customer">${s}</span>`).join('')}</div></div>` : ''}
+            
+            ${docGalleryHtml}
+
             ${vstatus === 'pending' ? `
-            <div style="display:flex;gap:12px;margin-top:24px;justify-content:center;">
-                <button class="btn btn-success" onclick="approveProvider('${p.id}')"><i class="fas fa-check"></i> Approve</button>
-                <button class="btn btn-danger" onclick="rejectProvider('${p.id}')"><i class="fas fa-times"></i> Reject</button>
+            <div style="display:flex;gap:12px;margin-top:32px;justify-content:center;padding-top:24px;border-top:1px solid var(--divider);">
+                <button class="btn btn-success" onclick="approveProvider('${p.id}')"><i class="fas fa-check"></i> Approve & Verify</button>
+                <button class="btn btn-danger" onclick="rejectProvider('${p.id}')"><i class="fas fa-times"></i> Reject Documents</button>
             </div>` : `
-            <div style="display:flex;gap:12px;margin-top:24px;justify-content:center;">
+            <div style="display:flex;gap:12px;margin-top:32px;justify-content:center;padding-top:24px;border-top:1px solid var(--divider);">
                 ${vstatus === 'approved' ? `<button class="btn btn-danger" onclick="rejectProvider('${p.id}')"><i class="fas fa-times"></i> Revoke Approval</button>` : `<button class="btn btn-success" onclick="approveProvider('${p.id}')"><i class="fas fa-check"></i> Approve</button>`}
             </div>`}
         `, 'lg');

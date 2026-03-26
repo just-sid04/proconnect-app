@@ -40,8 +40,11 @@ class _BrowseProvidersScreenState extends State<BrowseProvidersScreen> {
 
   Future<void> _load({bool refresh = false}) async {
     final pp = Provider.of<ProviderProvider>(context, listen: false);
+    final catId = _selectedCategory ?? pp.selectedCategory?.id;
+    debugPrint('Loading providers for category: $catId (refresh: $refresh)');
+    
     await pp.loadProviders(
-      category: _selectedCategory ?? pp.selectedCategory?.id,
+      category: catId,
       verified: _showVerifiedOnly,
       minRating: _minRating,
       search: _searchController.text.isNotEmpty ? _searchController.text : null,

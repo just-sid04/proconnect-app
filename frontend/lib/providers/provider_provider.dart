@@ -5,6 +5,9 @@ import '../services/provider_service.dart';
 import '../utils/constants.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:image_picker/image_picker.dart';
+import '../services/upload_service.dart';
+import '../services/location_service.dart';
 
 class ProviderProvider extends ChangeNotifier {
   final ProviderService _providerService = ProviderService();
@@ -19,6 +22,7 @@ class ProviderProvider extends ChangeNotifier {
   bool _hasMore = true;
   List<Review> _currentProviderReviews = [];
   bool _reviewsLoading = false;
+  bool _isTracking = false;
 
   // Getters
   List<ServiceProvider> get providers => _providers;
@@ -30,6 +34,7 @@ class ProviderProvider extends ChangeNotifier {
   bool get hasMore => _hasMore;
   List<Review> get currentProviderReviews => _currentProviderReviews;
   bool get reviewsLoading => _reviewsLoading;
+  bool get isTracking => _isTracking;
 
   // Load providers
   Future<void> loadProviders({
@@ -45,9 +50,10 @@ class ProviderProvider extends ChangeNotifier {
       _currentPage = 1;
       _hasMore = true;
       _providers = [];
+      _isLoading = false; // Reset loading state for fresh load
     }
 
-    if (_isLoading || !_hasMore) return;
+    if (_isLoading || (!_hasMore && !refresh)) return;
 
     _setLoading(true);
     _error = null;
@@ -245,6 +251,8 @@ class ProviderProvider extends ChangeNotifier {
     String? description,
     int? serviceArea,
     Availability? availability,
+    List<String>? portfolio,
+    List<String>? documents,
   }) async {
     _setLoading(true);
     _error = null;
@@ -258,6 +266,8 @@ class ProviderProvider extends ChangeNotifier {
         description: description,
         serviceArea: serviceArea,
         availability: availability,
+        portfolio: portfolio,
+        documents: documents,
       );
 
       if (response.success && response.data != null) {
@@ -273,6 +283,73 @@ class ProviderProvider extends ChangeNotifier {
         notifyListeners();
         return false;
       }
+    } catch (e) {
+      _error = ErrorMessages.genericError;
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Update Portfolio (Convenience method for UI)
+  Future<bool> updatePortfolio(List<XFile> images) async {
+    if (_currentProvider == null) return false;
+    
+    _setLoading(true);
+    _error = null;
+
+    try {
+      // 1. Upload new images
+      final List<String> newUrls = await UploadService.uploadImages(
+        xFiles: images,
+        bucket: 'profiles',
+        userId: _currentProvider!.userId,
+        folderPrefix: 'portfolio',
+      );
+
+      // 2. Combine with existing portfolio
+      final List<String> updatedPortfolio = [..._currentProvider!.portfolio, ...newUrls];
+
+      // 3. Update profile
+      return await updateProviderProfile(
+        id: _currentProvider!.id,
+        portfolio: updatedPortfolio,
+      );
+    } catch (e) {
+      _error = ErrorMessages.genericError;
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Upload Verification Documents
+  Future<bool> uploadVerificationDocuments(List<XFile> images) async {
+    if (_currentProvider == null) return false;
+    
+    _setLoading(true);
+    _error = null;
+
+    try {
+      // 1. Upload documents to PRIVATE 'verifications' bucket
+      final List<String> newUrls = await UploadService.uploadImages(
+        xFiles: images,
+        bucket: 'verifications',
+        userId: _currentProvider!.userId,
+        folderPrefix: 'verify',
+      );
+
+      // 2. Update profile with new documents
+      // Note: verificationStatus is updated via a separate field in updateProviderProfile if needed,
+      // but usually the DB trigger handles it or we set it explicitly.
+      final List<String> updatedDocs = [..._currentProvider!.documents, ...newUrls];
+
+      return await updateProviderProfile(
+        id: _currentProvider!.id,
+        documents: updatedDocs,
+      );
     } catch (e) {
       _error = ErrorMessages.genericError;
       notifyListeners();
@@ -334,8 +411,31 @@ class ProviderProvider extends ChangeNotifier {
     _currentPage = 1;
     _hasMore = true;
     _currentProviderReviews = [];
+    _isTracking = false;
+    LocationService.instance.stopTracking();
     notifyListeners();
   }
+
+  // Toggle Tracking (Online/Offline)
+  Future<void> toggleTracking(bool value) async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return;
+
+    if (value) {
+      final hasPermission = await LocationService.instance.checkPermissions();
+      if (hasPermission) {
+        await LocationService.instance.startTracking(userId: userId, isProvider: true);
+        _isTracking = true;
+      } else {
+        _error = "Location permission denied. Cannot go online.";
+      }
+    } else {
+      LocationService.instance.stopTracking();
+      _isTracking = false;
+    }
+    notifyListeners();
+  }
+
 
   void _setLoading(bool value) {
     _isLoading = value;

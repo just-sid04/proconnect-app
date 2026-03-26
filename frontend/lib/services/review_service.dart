@@ -85,6 +85,7 @@ class ReviewService {
     required String providerId,
     required int rating,
     String? comment,
+    List<String> images = const [],
   }) async {
     if (_useSupabase) {
       try {
@@ -97,11 +98,20 @@ class ReviewService {
           'provider_id': providerId,
           'rating': rating,
           'comment': comment ?? '',
+          'images': images,
         };
 
-        final data = await _sb.from('reviews').insert(row).select('*, customer:profiles!customer_id(*), provider:service_providers!provider_id(*, user:profiles!user_id(*), category:categories!category_id(*))').single();
+        final data = await _sb.from('reviews').insert(row).select().single();
+        
+        // Fetch full review with relationships for the model
+        final fullData = await _sb
+            .from('reviews')
+            .select('*, customer:profiles!customer_id(*), provider:service_providers!provider_id(*, user:profiles!user_id(*), category:categories!category_id(*))')
+            .eq('id', data['id'])
+            .single();
+
         return ApiResponse.success(
-            Review.fromJson(supabaseRowToJson(Map<String, dynamic>.from(data as Map))));
+            Review.fromJson(supabaseRowToJson(Map<String, dynamic>.from(fullData as Map))));
       } catch (e) {
         return ApiResponse.error(e.toString());
       }
@@ -112,6 +122,7 @@ class ReviewService {
       'providerId': providerId,
       'rating': rating,
       'comment': comment,
+      'images': images,
     });
 
     if (response.success) {
@@ -126,12 +137,14 @@ class ReviewService {
     required String id,
     int? rating,
     String? comment,
+    String? providerResponse,
   }) async {
     if (_useSupabase) {
       try {
         final updates = <String, dynamic>{'updated_at': DateTime.now().toIso8601String()};
         if (rating != null) updates['rating'] = rating;
         if (comment != null) updates['comment'] = comment;
+        if (providerResponse != null) updates['provider_response'] = providerResponse;
 
         final data = await _sb
             .from('reviews')

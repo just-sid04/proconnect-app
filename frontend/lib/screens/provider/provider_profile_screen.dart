@@ -8,6 +8,11 @@ import '../../providers/booking_provider.dart';
 import '../../providers/provider_provider.dart';
 import '../../utils/theme.dart';
 import '../auth/login_screen.dart';
+import '../../widgets/location_picker_map.dart';
+import 'package:latlong2/latlong.dart';
+import '../../models/user_model.dart' as app;
+import 'portfolio_screen.dart';
+import 'verification_screen.dart';
 
 class ProviderProfileScreen extends StatefulWidget {
   const ProviderProfileScreen({super.key});
@@ -37,12 +42,44 @@ class _ProviderProfileScreenState extends State<ProviderProfileScreen> {
         MaterialPageRoute(builder: (_) => const LoginScreen()), (_) => false);
   }
 
+  Future<void> _updateLocationOnMap(
+      BuildContext context, AuthProvider auth) async {
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(builder: (_) => const LocationPickerMap()),
+    );
+
+    if (result != null && result['location'] != null) {
+      final latLng = result['location'] as LatLng;
+      final address = result['address'] as String?;
+
+      final ok = await auth.updateProfile(
+        location: app.Location(
+          address: address ?? '',
+          city: '',
+          state: '',
+          zipCode: '',
+          latitude: latLng.latitude,
+          longitude: latLng.longitude,
+        ),
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(ok ? 'Location updated!' : 'Failed to update location'),
+          backgroundColor: ok ? AppTheme.successColor : AppTheme.errorColor,
+        ));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final pp = Provider.of<ProviderProvider>(context);
     final p = pp.currentProvider;
     final user = auth.user;
+    final verified = p?.isVerified ?? false;
 
     if (pp.isLoading) {
       return const Scaffold(
@@ -139,6 +176,20 @@ class _ProviderProfileScreenState extends State<ProviderProfileScreen> {
                 const SizedBox(height: 14),
               ],
 
+              // Portfolio link
+              const _SectionLabel('Portfolio'),
+              _card(children: [
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.photo_library_rounded, color: AppTheme.primaryColor),
+                  title: const Text('Manage My Portfolio', style: TextStyle(color: AppTheme.textPrimary)),
+                  subtitle: const Text('Add or remove photos of your work', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                  trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortfolioScreen())),
+                ),
+              ]),
+              const SizedBox(height: 14),
+
               // Skills
               if (p.skills.isNotEmpty) ...[
                 const _SectionLabel('Skills'),
@@ -177,14 +228,36 @@ class _ProviderProfileScreenState extends State<ProviderProfileScreen> {
                 if (user?.location?.fullAddress != null) ...[
                   const Divider(
                       height: 1, color: AppTheme.dividerColor, indent: 52),
-                  _Row(
+                  GestureDetector(
+                    onTap: () => _updateLocationOnMap(context, auth),
+                    child: _Row(
                       icon: Icons.home_rounded,
                       label: 'Base Location',
-                      value: user?.location?.fullAddress ?? '',
-                      color: AppTheme.textSecondary),
+                      value: user?.location?.fullAddress ?? 'Not set',
+                      color: AppTheme.textSecondary,
+                      trailing: const Icon(Icons.edit_location_alt_rounded,
+                          size: 16, color: AppTheme.primaryColor),
+                    ),
+                  ),
                 ],
               ]),
               const SizedBox(height: 14),
+
+              // Verification link (if not verified)
+              if (!verified) ...[
+                const _SectionLabel('Trust & Safety'),
+                _card(children: [
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.verified_user_rounded, color: AppTheme.warningColor),
+                    title: const Text('Complete Identity Verification', style: TextStyle(color: AppTheme.textPrimary)),
+                    subtitle: const Text('Upload ID to build trust with customers', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+                    trailing: const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VerificationScreen())),
+                  ),
+                ]),
+                const SizedBox(height: 14),
+              ],
 
               // Availability
               Row(children: [
@@ -825,11 +898,13 @@ class _Row extends StatelessWidget {
   final IconData icon;
   final String label, value;
   final Color color;
+  final Widget? trailing;
   const _Row(
       {required this.icon,
       required this.label,
       required this.value,
-      required this.color});
+      required this.color,
+      this.trailing});
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
@@ -855,6 +930,7 @@ class _Row extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                         color: AppTheme.textPrimary)),
               ])),
+          if (trailing != null) trailing!,
         ]),
       );
 }

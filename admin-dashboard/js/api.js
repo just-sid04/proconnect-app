@@ -182,6 +182,37 @@ async function getProviders({ status = '' } = {}) {
     return data || [];
 }
 
+async function getProviderDocuments(providerId) {
+    const { data, error } = await supabaseClient
+        .from('service_providers')
+        .select('documents')
+        .eq('id', providerId)
+        .single();
+    if (error) throw error;
+    return data.documents || [];
+}
+
+async function getSignedUrls(bucket, paths, expires = 3600) {
+    if (!paths || !paths.length) return [];
+    // Paths are usually full URLs or relative paths stored in DB.
+    // If they are full URLs from Supabase, we need to extract the relative path.
+    const relativePaths = paths.map(p => {
+        if (p.includes('/storage/v1/object/')) {
+            const parts = p.split(`/storage/v1/object/public/${bucket}/`);
+            if (parts.length > 1) return parts[1];
+            // Handle private bucket URLs if they are different
+            const privateParts = p.split(`/storage/v1/object/authenticated/${bucket}/`);
+            if (privateParts.length > 1) return privateParts[1];
+            // If it's just the filename or partial path, return as is
+        }
+        return p;
+    });
+
+    const { data, error } = await supabaseClient.storage.from(bucket).createSignedUrls(relativePaths, expires);
+    if (error) throw error;
+    return data.map(item => item.signedUrl);
+}
+
 async function updateProviderStatus(id, status) {
     const { error } = await supabaseClient
         .from('service_providers')

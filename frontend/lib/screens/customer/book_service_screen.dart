@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/provider_provider.dart';
 import '../../models/booking_model.dart' as booking_model;
+import '../../widgets/location_picker_map.dart';
 import '../../utils/theme.dart';
 
 class BookServiceScreen extends StatefulWidget {
@@ -21,6 +22,10 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
   final _addressController = TextEditingController();
   final _cityController = TextEditingController();
   final _notesController = TextEditingController();
+  
+  double? _latitude;
+  double? _longitude;
+  String? _addressText;
   
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
@@ -98,10 +103,12 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
       categoryId: widget.provider.categoryId,
       description: _descriptionController.text,
       serviceLocation: booking_model.Location(
-        address: _addressController.text,
+        address: _addressController.text.isEmpty ? (_addressText ?? '') : _addressController.text,
         city: _cityController.text,
         state: '',
         zipCode: '',
+        latitude: _latitude,
+        longitude: _longitude,
       ),
       scheduledDate: DateFormat('yyyy-MM-dd').format(_selectedDate!),
       scheduledTime: '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
@@ -214,6 +221,34 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
               ),
             ),
             const SizedBox(height: 12),
+            
+            // Map Picker Button
+            OutlinedButton.icon(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LocationPickerMap()),
+                );
+                if (result != null && result is Map) {
+                  setState(() {
+                    _latitude = result['location'].latitude;
+                    _longitude = result['location'].longitude;
+                    _addressText = result['address'];
+                    if (_addressText != null) {
+                      _addressController.text = _addressText!;
+                    }
+                  });
+                }
+              },
+              icon: const Icon(Icons.map_outlined),
+              label: Text(_addressText == null ? 'Select on Map' : 'Change Location'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+            const SizedBox(height: 16),
+
             TextFormField(
               controller: _addressController,
               decoration: const InputDecoration(

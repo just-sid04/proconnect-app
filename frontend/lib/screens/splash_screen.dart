@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import '../utils/theme.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -36,12 +38,45 @@ class _SplashScreenState extends State<SplashScreen>
             curve: const Interval(0.5, 1.0, curve: Curves.easeOut)));
 
     _ctrl.forward();
-    Future.delayed(const Duration(milliseconds: 2400), _navigate);
+    
+    // ─── Initialize Auth & Navigate ──────────────────────────────────────────
+    _initAndNavigate();
   }
 
-  void _navigate() async {
+  Future<void> _initAndNavigate() async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    debugPrint('SplashScreen: Starting _initAndNavigate...');
+    
+    // 1. Kick off initialization in background
+    final initFuture = auth.initialize();
+    
+    // 2. Wait for at least 2.4s for splash feel
+    final splashFuture = Future.delayed(const Duration(milliseconds: 2400));
+    
+    await Future.wait([initFuture, splashFuture]);
+    debugPrint('SplashScreen: Initialization & Delay finished. LoggedIn: ${auth.isLoggedIn}');
+    
     if (!mounted) return;
-    Navigator.pushReplacementNamed(context, '/login');
+    _navigate(auth);
+  }
+
+  void _navigate(AuthProvider auth) {
+    debugPrint('SplashScreen: Navigating based on auth state...');
+    if (!auth.isLoggedIn) {
+      debugPrint('SplashScreen: Not logged in, going to /login');
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
+    
+    final role = auth.user?.role;
+    debugPrint('SplashScreen: Logged in as $role, navigating home...');
+    if (auth.isAdmin) {
+      Navigator.pushReplacementNamed(context, '/admin-home');
+    } else if (auth.isProvider) {
+      Navigator.pushReplacementNamed(context, '/provider-home');
+    } else {
+      Navigator.pushReplacementNamed(context, '/customer-home');
+    }
   }
 
   @override

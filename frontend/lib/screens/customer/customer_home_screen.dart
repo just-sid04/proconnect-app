@@ -14,6 +14,9 @@ import 'provider_details_screen.dart';
 import '../chat_screen.dart';
 import '../common/messages_list_screen.dart';
 import '../../providers/chat_provider.dart';
+import 'nearby_providers_map.dart';
+import '../../services/ai_service.dart';
+import '../../models/provider_model.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({super.key});
@@ -193,6 +196,8 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
+  List<Category> _recommendations = [];
+
   @override
   void initState() {
     super.initState();
@@ -202,7 +207,15 @@ class _HomeTabState extends State<HomeTab> {
   Future<void> _loadData() async {
     final pp = Provider.of<ProviderProvider>(context, listen: false);
     final bp = Provider.of<BookingProvider>(context, listen: false);
-    if (pp.categories.isEmpty) await pp.loadCategories();
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+
+    final userId = auth.user?.id;
+    if (userId != null) {
+      AiService.getRecommendedCategories(userId).then((list) {
+        if (mounted) setState(() => _recommendations = list);
+      });
+    }
+
     await Future.wait([
       pp.loadProviders(refresh: true),
       bp.loadBookings(refresh: true),
@@ -256,6 +269,56 @@ class _HomeTabState extends State<HomeTab> {
               child: Center(child: CircularProgressIndicator(color: AppTheme.primaryColor)),
             )
           else ...[
+            
+          // ── Recommendations (AI) ───────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.auto_awesome_rounded, color: AppTheme.accentColor, size: 18),
+                    const SizedBox(width: 8),
+                    _SectionHeader(title: 'Recommended for You'),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        gradient: AppTheme.primaryGradient,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'AI',
+                        style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 116,
+                child: _recommendations.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No recommendations yet. Start booking to see AI magic!',
+                          style: GoogleFonts.inter(color: AppTheme.textSecondary, fontSize: 12),
+                        ),
+                      )
+                    : ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.fromLTRB(20, 12, 8, 0),
+                        itemCount: _recommendations.length,
+                        itemBuilder: (_, i) => _CategoryTile(
+                          category: _recommendations[i],
+                          onTap: () {
+                            pp.setSelectedCategory(_recommendations[i]);
+                            widget.openBrowse();
+                          },
+                        ),
+                      ),
+              ),
+            ),
 
           // ── Categories ─────────────────────────────────────────────────
           SliverToBoxAdapter(
@@ -432,6 +495,22 @@ class _HomeTabState extends State<HomeTab> {
                   child: Text('Search for services...',
                       style: GoogleFonts.inter(
                           color: AppTheme.textHint, fontSize: 14))),
+              GestureDetector(
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const NearbyProvidersMap())),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentColor.withAlpha(40),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.map_rounded,
+                      color: AppTheme.accentColor, size: 16),
+                ),
+              ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(

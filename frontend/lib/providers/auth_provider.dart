@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../models/user_model.dart';
 import '../services/auth_service_supabase.dart';
 import '../services/upload_service.dart';
+import '../services/notification_service.dart';
 import '../utils/constants.dart';
 import 'booking_provider.dart';
 
@@ -50,34 +51,56 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> initialize() async {
     if (_isInitialized) return;
-
+    debugPrint('AuthProvider: Initializing session...');
     _setLoading(true);
 
     try {
-      // Restore existing session
+      // 1. Optimistic restore from local storage (fast)
+      final savedUser = await _authService.getSavedUser();
+      if (savedUser != null) {
+        _user = savedUser;
+        debugPrint('AuthProvider: Optimistic restore from storage: ${_user?.email}');
+        notifyListeners();
+      }
+
+      // 2. Verify/Refresh with Supabase (network)
+      // We check isLoggedIn but we also try to get current user to ensure profile is synced
       final isSignedIn = await _authService.isLoggedIn();
+      debugPrint('AuthProvider: Is signed in (check): $isSignedIn');
+
       if (isSignedIn) {
         final response = await _authService.getCurrentUser();
-        if (response.success) {
+        debugPrint('AuthProvider: Current user fetch success: ${response.success}');
+        
+        if (response.success && response.data != null) {
           _user = response.data;
           _error = null;
         } else {
+          // If we had a saved user but Supabase says no session exists anymore
+          debugPrint('AuthProvider: Session stale or invalid, logging out.');
           await logout();
         }
+      } else {
+        _user = null;
       }
 
-      // ── Listen for auth state changes (token refresh / sign-out) ──────────
+      // ── Listen for auth state changes ──────────
       _authSubscription = sb.Supabase.instance.client.auth.onAuthStateChange
-          .listen(_handleAuthStateChange, onError: (_) {});
+          .listen(_handleAuthStateChange, onError: (e) {
+            debugPrint('AuthProvider: Auth subscription error: $e');
+          });
     } catch (e) {
+      debugPrint('AuthProvider: Initialization error: $e');
       _error = ErrorMessages.genericError;
     } finally {
       _isInitialized = true;
       _setLoading(false);
+      debugPrint('AuthProvider: Initialization complete. Logged in: $isLoggedIn');
     }
   }
 
   void _handleAuthStateChange(sb.AuthState state) {
+    debugPrint('AuthProvider: AuthStateChange: ${state.event}');
     switch (state.event) {
       case sb.AuthChangeEvent.signedIn:
         // Session restored or token refreshed — re-fetch profile if needed
@@ -125,6 +148,14 @@ class AuthProvider extends ChangeNotifier {
       final response = await _authService.login(email: email, password: password);
       if (response.success) {
         _user = response.data;
+        
+        // ── Sync FCM Token (Safe) ─────────────────────────────────────────────
+        try {
+          await NotificationService.instance.updateToken();
+        } catch (e) {
+          debugPrint('AuthProvider: FCM token sync failed: $e');
+        }
+
         _error = null;
         notifyListeners();
         return true;
@@ -151,6 +182,8 @@ class AuthProvider extends ChangeNotifier {
     required String role,
     String? phone,
     XFile? profileImage,
+    Location? location,
+    Map<String, dynamic>? jsonMetadata,
   }) async {
     _setLoading(true);
     _error = null;
@@ -162,10 +195,20 @@ class AuthProvider extends ChangeNotifier {
         password: password,
         role: role,
         phone: phone,
+        profileImage: profileImage,
+        location: location,
+        jsonMetadata: jsonMetadata,
       );
 
       if (response.success) {
         _user = response.data;
+
+        // ── Sync FCM Token (Safe) ─────────────────────────────────────────────
+        try {
+          await NotificationService.instance.updateToken();
+        } catch (e) {
+          debugPrint('AuthProvider: FCM token sync failed: $e');
+        }
         
         // ── Upload photo if provided ──────────────────────────────────────────
         if (profileImage != null && _user != null) {
@@ -203,7 +246,10 @@ class AuthProvider extends ChangeNotifier {
     String? phone,
     Location? location,
     String? profilePhoto,
+    String? fcmToken,
   }) async {
+    if (_user == null) return false;
+
     _setLoading(true);
     _error = null;
 
@@ -213,6 +259,7 @@ class AuthProvider extends ChangeNotifier {
         phone: phone,
         location: location,
         profilePhoto: profilePhoto,
+        fcmToken: fcmToken,
       );
       if (response.success) {
         _user = response.data;

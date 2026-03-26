@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io' as io;
 
 import '../../providers/booking_provider.dart';
 import '../../providers/review_provider.dart';
@@ -70,74 +72,34 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   }
 
   Future<void> _showReviewDialog(String providerId) async {
-    double rating = 5;
-    final commentController = TextEditingController();
-
-    final submitted = await showDialog<bool>(
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Rate Your Experience'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RatingBar.builder(
-              initialRating: 5,
-              minRating: 1,
-              direction: Axis.horizontal,
-              itemCount: 5,
-              allowHalfRating: false,
-              itemBuilder: (context, _) => const Icon(
-                Icons.star,
-                color: AppTheme.accentColor,
-              ),
-              onRatingUpdate: (value) => rating = value,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: commentController,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Comment (optional)',
-                hintText: 'Share your experience...',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
+      builder: (dialogContext) => _ReviewDialog(providerId: providerId),
+    );
+
+    if (result != null && mounted) {
+      final reviewProvider = Provider.of<ReviewProvider>(context, listen: false);
+      final success = await reviewProvider.createReview(
+        bookingId: widget.bookingId,
+        providerId: providerId,
+        rating: result['rating'],
+        comment: result['comment'],
+        images: result['images'],
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? 'Review submitted successfully.'
+                : (reviewProvider.error ?? 'Failed to submit review.'),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Submit'),
-          ),
-        ],
-      ),
-    );
-
-    if (submitted != true || !mounted) return;
-
-    final reviewProvider = Provider.of<ReviewProvider>(context, listen: false);
-    final success = await reviewProvider.createReview(
-      bookingId: widget.bookingId,
-      providerId: providerId,
-      rating: rating.round(),
-      comment: commentController.text.trim(),
-    );
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? 'Review submitted successfully.'
-              : (reviewProvider.error ?? 'Failed to submit review.'),
+          backgroundColor: success ? AppTheme.successColor : AppTheme.errorColor,
         ),
-        backgroundColor: success ? AppTheme.successColor : AppTheme.errorColor,
-      ),
-    );
+      );
+    }
   }
 
   @override
@@ -387,10 +349,179 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   }
 }
 
+class _ReviewDialog extends StatefulWidget {
+  final String providerId;
+  const _ReviewDialog({super.key, required this.providerId});
+
+  @override
+  State<_ReviewDialog> createState() => _ReviewDialogState();
+}
+
+class _ReviewDialogState extends State<_ReviewDialog> {
+  double _rating = 5;
+  final _commentController = TextEditingController();
+  List<XFile> _selectedImages = [];
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Rate Your Experience'),
+      content: Container(
+        width: 450,
+        constraints: const BoxConstraints(maxHeight: 500),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 16),
+              // Custom Star Rating to replace RatingBar for stability
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return IconButton(
+                    onPressed: () => setState(() => _rating = index + 1.0),
+                    icon: Icon(
+                      index < _rating ? Icons.star : Icons.star_border,
+                      color: AppTheme.accentColor,
+                      size: 32,
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 24),
+              TextField(
+                controller: _commentController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Comment (optional)',
+                  hintText: 'Share your experience...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Add Photos (Max 5)',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  ...List.generate(_selectedImages.length, (index) {
+                    return Stack(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey[300]!),
+                            image: DecorationImage(
+                              image: kIsWeb
+                                  ? NetworkImage(_selectedImages[index].path)
+                                  : FileImage(io.File(_selectedImages[index].path)) as ImageProvider,
+                              fit: BoxFit.cover,
+                              onError: (e, s) => debugPrint('Image error: $e'),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 2,
+                          right: 2,
+                          child: GestureDetector(
+                            onTap: () => setState(() => _selectedImages.removeAt(index)),
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.close, size: 14, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+                  if (_selectedImages.length < 5)
+                    GestureDetector(
+                      onTap: () async {
+                        final picker = ImagePicker();
+                        final images = await picker.pickMultiImage(
+                          imageQuality: 70,
+                          maxWidth: 800,
+                        );
+                        if (images.isNotEmpty) {
+                          setState(() {
+                            _selectedImages.addAll(images);
+                            if (_selectedImages.length > 5) {
+                              _selectedImages = _selectedImages.sublist(0, 5);
+                            }
+                          });
+                        }
+                      },
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey[300]!, style: BorderStyle.solid),
+                        ),
+                        child: const Icon(Icons.add_a_photo, color: Colors.grey),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSubmitting ? null : () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _isSubmitting
+              ? null
+              : () {
+                  Navigator.pop(context, {
+                    'rating': _rating.round(),
+                    'comment': _commentController.text.trim(),
+                    'images': _selectedImages,
+                  });
+                },
+          child: _isSubmitting
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                )
+              : const Text('Submit'),
+        ),
+      ],
+    );
+  }
+}
+
 class _SectionTitle extends StatelessWidget {
   final String title;
-
-  const _SectionTitle(this.title);
+  const _SectionTitle(this.title, {super.key});
 
   @override
   Widget build(BuildContext context) {

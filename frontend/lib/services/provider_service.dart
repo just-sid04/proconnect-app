@@ -26,9 +26,7 @@ class ProviderService {
       try {
         var query = _sb
             .from('service_providers')
-            .select('*, user:profiles!user_id(*), category:categories!category_id(*)')
-            .order('rating', ascending: false)
-            .range((page - 1) * limit, page * limit - 1);
+            .select('*, user:profiles!user_id(*), category:categories!category_id(*)');
 
         if (category != null) query = query.eq('category_id', category);
         if (minRating != null) query = query.gte('rating', minRating);
@@ -39,7 +37,9 @@ class ProviderService {
           query = query.ilike('description', '%$term%');
         }
 
-        final data = await query;
+        final data = await query
+            .order('rating', ascending: false)
+            .range((page - 1) * limit, page * limit - 1);
         final providers = (data as List)
             .map((r) => ServiceProvider.fromJson(
                 supabaseRowToJson(Map<String, dynamic>.from(r as Map))))
@@ -81,8 +81,40 @@ class ProviderService {
     int limit = 10,
   }) async {
     if (_useSupabase) {
-      // Geo filtering requires PostGIS - use getProviders for now
-      return getProviders(page: page, limit: limit);
+      try {
+        final data = await _sb.rpc('get_nearby_providers', params: {
+          'current_lat': latitude,
+          'current_lng': longitude,
+          'radius_km': radius.toDouble(),
+        });
+
+        final list = (data as List).map((r) {
+          final json = supabaseRowToJson(Map<String, dynamic>.from(r as Map));
+          
+          // Restructure for ServiceProvider.fromJson expectations
+          json['user'] = {
+            'id': json['userId'],
+            'name': json['name'],
+            'email': json['email'],
+            'profilePhoto': json['profilePhoto'],
+            'location': {
+              'latitude': json['latitude'],
+              'longitude': json['longitude'],
+            }
+          };
+          
+          json['category'] = {
+            'id': json['categoryId'],
+            'name': json['categoryName'],
+          };
+
+          return ServiceProvider.fromJson(json);
+        }).toList();
+
+        return ApiResponse.success(list);
+      } catch (e) {
+        return ApiResponse.error(e.toString());
+      }
     }
 
     final response = await _api.get('/providers/nearby', queryParams: {
@@ -188,6 +220,8 @@ class ProviderService {
     String? description,
     int? serviceArea,
     Availability? availability,
+    List<String>? portfolio,
+    List<String>? documents,
   }) async {
     if (_useSupabase) {
       try {
@@ -198,6 +232,8 @@ class ProviderService {
         if (description != null) updates['description'] = description;
         if (serviceArea != null) updates['service_area'] = serviceArea;
         if (availability != null) updates['availability'] = availability.toJson();
+        if (portfolio != null) updates['portfolio'] = portfolio;
+        if (documents != null) updates['documents'] = documents;
 
         final data = await _sb
             .from('service_providers')
@@ -219,6 +255,8 @@ class ProviderService {
     if (description != null) body['description'] = description;
     if (serviceArea != null) body['serviceArea'] = serviceArea;
     if (availability != null) body['availability'] = availability.toJson();
+    if (portfolio != null) body['portfolio'] = portfolio;
+    if (documents != null) body['documents'] = documents;
 
     final response = await _api.put('/providers/$id', body: body);
 

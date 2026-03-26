@@ -271,17 +271,68 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                                                 ),
                                               ),
                                               const SizedBox(height: 6),
-                                              Text(review.comment.isNotEmpty
-                                                  ? review.comment
-                                                  : 'No comment'),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                review.timeAgo,
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: AppTheme.textSecondary,
-                                                ),
-                                              ),
+                                               Text(review.comment.isNotEmpty
+                                                   ? review.comment
+                                                   : 'No comment'),
+                                               if (review.images.isNotEmpty) ...[
+                                                 const SizedBox(height: 12),
+                                                 SizedBox(
+                                                   height: 60,
+                                                   child: ListView.builder(
+                                                     scrollDirection: Axis.horizontal,
+                                                     itemCount: review.images.length,
+                                                     itemBuilder: (context, i) => Padding(
+                                                       padding: const EdgeInsets.only(right: 8),
+                                                       child: ClipRRect(
+                                                         borderRadius: BorderRadius.circular(4),
+                                                         child: Image.network(
+                                                           review.images[i],
+                                                           width: 60,
+                                                           height: 60,
+                                                           fit: BoxFit.cover,
+                                                         ),
+                                                       ),
+                                                     ),
+                                                   ),
+                                                 ),
+                                               ],
+                                               if (review.providerResponse.isNotEmpty) ...[
+                                                 const SizedBox(height: 12),
+                                                 Container(
+                                                   padding: const EdgeInsets.all(10),
+                                                   decoration: BoxDecoration(
+                                                     color: AppTheme.primaryColor.withOpacity(0.05),
+                                                     borderRadius: BorderRadius.circular(8),
+                                                     border: Border.all(color: AppTheme.primaryColor.withOpacity(0.1)),
+                                                   ),
+                                                   child: Column(
+                                                     crossAxisAlignment: CrossAxisAlignment.start,
+                                                     children: [
+                                                       const Text(
+                                                         'Provider Response',
+                                                         style: TextStyle(
+                                                           fontSize: 11,
+                                                           fontWeight: FontWeight.bold,
+                                                           color: AppTheme.primaryColor,
+                                                         ),
+                                                       ),
+                                                       const SizedBox(height: 4),
+                                                       Text(
+                                                         review.providerResponse,
+                                                         style: const TextStyle(fontSize: 13),
+                                                       ),
+                                                     ],
+                                                   ),
+                                                 ),
+                                               ],
+                                               const SizedBox(height: 8),
+                                               Text(
+                                                 review.timeAgo,
+                                                 style: const TextStyle(
+                                                   fontSize: 12,
+                                                   color: AppTheme.textSecondary,
+                                                 ),
+                                               ),
                                             ],
                                           ),
                                         ),
@@ -430,13 +481,93 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
                         itemCount: reviewProvider.reviews.length,
                         itemBuilder: (context, index) {
                           final review = reviewProvider.reviews[index];
-                          return ListTile(
-                            title: Text(review.customer?.name ?? 'Customer'),
-                            subtitle: Text(
-                              '${'★' * review.rating}${review.comment.isNotEmpty ? '\n${review.comment}' : ''}',
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                            child: Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          review.customer?.name ?? 'Customer',
+                                          style: const TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          review.timeAgo,
+                                          style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: List.generate(
+                                        5,
+                                        (index) => Icon(
+                                          index < review.rating ? Icons.star : Icons.star_border,
+                                          size: 16,
+                                          color: AppTheme.accentColor,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(review.comment),
+                                    if (review.images.isNotEmpty) ...[
+                                      const SizedBox(height: 12),
+                                      SizedBox(
+                                        height: 80,
+                                        child: ListView.builder(
+                                          scrollDirection: Axis.horizontal,
+                                          itemCount: review.images.length,
+                                          itemBuilder: (context, i) => Padding(
+                                            padding: const EdgeInsets.only(right: 8),
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(8),
+                                              child: Image.network(
+                                                review.images[i],
+                                                width: 80,
+                                                height: 80,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                    if (review.providerResponse.isNotEmpty) ...[
+                                      const SizedBox(height: 12),
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.primaryColor.withOpacity(0.05),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: AppTheme.primaryColor.withOpacity(0.1)),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Provider Response',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppTheme.primaryColor,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(review.providerResponse),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
                             ),
-                            isThreeLine: review.comment.isNotEmpty,
-                            trailing: Text(review.timeAgo),
                           );
                         },
                       ),

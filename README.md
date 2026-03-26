@@ -1,120 +1,125 @@
-# 🚀 ProConnect: Smart Local Service Marketplace
+# 🚀 ProConnect: The AI-Powered Local Service Ecosystem
 
-ProConnect is a premium, high-performance cross-platform application designed to bridge the gap between skilled service providers (electricians, plumbers, tutors, etc.) and customers in their local vicinity. 
-
-Built with **Flutter** and powered by **Supabase**, ProConnect offers a seamless, real-time experience with a professional design system inspired by modern industry leaders.
+ProConnect is a premium, high-performance marketplace platform designed to bridge the gap between skilled service providers and local customers. Built with an "Architecture-First" mindset, it leverages **Flutter** and **Supabase** to deliver a real-time, geospatial-aware, and intelligent service discovery experience.
 
 ---
 
-## ✨ Key Features
+## 💎 Special Features (The "Wow" Factor)
 
-### 👤 For Customers
-- **Service Discovery**: High-visual category browsing and smart provider search.
-- **Trusted Choices**: Detailed provider profiles with verified ratings and community reviews.
-- **Smart Booking**: One-tap scheduling with date, time, and service location.
-- **In-App Messaging**: Real-time chat with providers, including unread message badges.
-- **Deep Linking**: Seamless email confirmation redirects directly back into the app.
-- **Real-time Status**: Live tracking of booking lifecycle (Pending → Accepted → In-Progress → Completed).
+### 📍 Precision Geolocation (PostGIS Powered)
+Unlike traditional apps that just show a map, ProConnect uses **PostgreSQL PostGIS** at the database level. 
+- **Radius Search**: Customers find providers within a dynamic `X km` radius.
+- **Real-time Tracking**: Providers sync their live coordinates, visible to customers during active bookings.
+- **Map Picker**: Integrated interactive map for manual service location pin-pointing.
 
-### 🛠️ For Service Providers
-- **Professional Presence**: Native image upload for profile photos (Gallery/Camera).
-- **Business Management**: Real-time dashboard for managing incoming service requests.
-- **Optimistic UI**: Instant status updates (Accept/Start/Complete) with zero network lag feel.
-- **Messaging Hub**: Quick-chat from any booking card to coordinate with customers.
-- **Earnings Tracking**: Monitor productivity and completed jobs directly from the app.
+### 🤖 Smart AI Foundations
+- **Personalized Discovery**: A server-side recommendation engine (PL/pgSQL RPC) analyzes user booking history and global trends to suggest the most relevant categories.
+- **Intelligence at the Edge**: Non-blocking AI UI that provides immediate category suggestions on the home screen.
 
-### 🛡️ For Admin
-- **Centralized Command**: Unified dashboard for platform health and statistics.
-- **Provider Verification**: Robust system to verify and onboard skilled professionals.
-- **Platform Integrity**: Manage categories, moderate reviews, and resolve disputes.
+### 🛡️ Zero-Trust Security (Supabase RLS)
+- **Hardened RLS**: Every single table in ProConnect is protected by hardened **Row-Level Security** policies. 
+- **Direct-to-DB**: The frontend communicates directly with Supabase, eliminating traditional backend bottlenecks while maintaining bank-grade data isolation.
+
+### ⚡ Optimistic UI & Real-time Sync
+- **Messaging Hub**: Sub-second latency for in-app chat using Postgres CDC (Change Data Capture).
+- **Infinite Feel**: State management (Provider) ensures status updates (Accept/Start/Complete) reflect instantly in the UI.
 
 ---
 
-## 🛠 Tech Stack
+## 🏛️ Perfect Architecture
 
-### Frontend (Mobile & Web)
-- **Framework**: [Flutter](https://flutter.dev/) (3.x)
-- **State Management**: Provider Pattern
-- **UI/UX**: Custom Premium Design System (Vanilla CSS inspired styling in Flutter)
-- **Native Features**: `image_picker` for media, `flutter_launcher_icons` for branding.
+ProConnect follows a **BaaS-Native Architecture**, maximizing efficiency by removing the "Middle-Man" server.
 
-### Backend (BaaS)
-- **Provider**: [Supabase](https://supabase.com/)
-- **Database**: PostgreSQL with Hardened Row-Level Security (RLS)
-- **Authentication**: Supabase Auth with Deep Linking (`proconnect://confirm`)
-- **Storage**: Supabase Storage for secure asset management (`avatars` bucket).
-- **Real-time**: Postgres CDC for live chat, unread counts, and booking synchronization.
+```mermaid
+graph TD
+    subgraph "Frontend (Flutter)"
+        UI["UI Layer (Screens/Widgets)"]
+        Prov["State Management (Provider)"]
+        Models["Hardened Models (Type-Safe)"]
+        SBC["Supabase Client"]
+        
+        UI <--> Prov
+        Prov <--> Models
+        Prov <--> SBC
+    end
+
+    subgraph "Backend (Supabase/PostgreSQL)"
+        Auth["Supabase Auth (JWT)"]
+        DB[("PostgreSQL + PostGIS")]
+        Store["Supabase Storage (Buckets)"]
+        RT["Realtime (CDC/WebSockets)"]
+        
+        SBC <--> Auth
+        SBC <--> DB
+        SBC <--> Store
+        SBC <--> RT
+    end
+
+    subgraph "Architecture Patterns"
+        P1["Repository-less (Direct PostgREST)"]
+        P2["Security-at-Rest (RLS)"]
+        P3["Geo-Logic (DB RPCs)"]
+    end
+```
 
 ---
 
-## 📂 Project Structure
+## ✨ Comprehensive Feature Matrix
+
+### 👤 Customer Experience
+- **Smart Discovery**: AI-driven "Recommended for You" categories.
+- **Global Search**: Instantly find providers by name, skill, or service area.
+- **Booking Lifecycle**: Full-stack management from request to completion.
+- **Media-Rich Reviews**: Submit ratings with multi-image support.
+- **Deep Linking**: Magic links for secure, one-tap email confirmation.
+
+### 🛠️ Provider Management
+- **Business Suite**: Real-time dashboard for active/pending job management.
+- **Portfolios**: Showcase skills with a high-visual media gallery.
+- **Availability Engine**: Fine-grained weekly schedule control (Mon-Sun).
+- **Service Radius**: Define a custom work area (km) to filter leads.
+- **Identity Verification**: Secure document upload workflow for verified badges.
+
+### 🛡️ Admin Command Center
+- **Statistics**: Platform-wide health metrics (active users, liquidity).
+- **Onboarding**: Interface for verifying provider documents and portfolios.
+- **Integrity**: Manage categories and moderate community feedback.
+
+---
+
+## 📂 Project Anatomy
 
 ```text
 proconnect/
-├── frontend/               # Flutter Multi-platform Application
-│   ├── assets/            # App Icons, Images, and Fonts
-│   ├── lib/
-│   │   ├── models/        # Type-safe & Hardened Data Models
-│   │   ├── providers/     # Global State & Real-time Streams
-│   │   ├── screens/       # feature-based UI Screens
-│   │   ├── services/      # Supabase & Upload Logic
-│   │   └── utils/         # Theme, Constants, and Mappers
-│   └── pubspec.yaml       # Flutter Dependencies & Branding
+├── frontend/lib/
+│   ├── models/        # Strict JSON-to-Dart mapping
+│   ├── providers/     # Global state & stream observers
+│   ├── services/      # AI, Geo, and Supabase Glue
+│   ├── widgets/       # Atomic UI components
+│   └── screens/       # Role-based feature folders
 │
-├── supabase/               # Backend-as-a-Code
-│   ├── migrations/        # SQL Version Control (RLS & Schema)
-│   └── seed/              # Development Data
+├── supabase/migrations/ # Version-controlled DB evolution
+│   └── 017_smart_recommends.sql # AI logic
 │
-├── admin-dashboard/        # Modern Admin Interface
-│   ├── js/                # Direct Supabase Client Logic
-│   └── index.html         # Premium Dashboard UI
-│
-└── README.md              # Project Documentation
+└── admin-dashboard/     # React-styled Premium Admin Panel
 ```
 
 ---
 
 ## 🚦 Quick Start
 
-### 1. Backend Setup (Supabase)
-1. Create a free project at [supabase.com](https://supabase.com).
-2. Create a public bucket named `avatars` in **Storage**.
-3. **CRITICAL**: Apply all migrations in `./supabase/migrations/` sequentially. 
-   - Ensure [012_final_apk_stability.sql](./supabase/migrations/012_final_apk_stability.sql) is applied last to fix RLS for production APKs.
+### 1. Database
+- Enable **PostGIS** in your Supabase project.
+- Create buckets: `avatars`, `portfolios`, `id-verifications`.
+- Run all SQL migrations in `./supabase/migrations/` sequentially.
 
-### 2. Frontend Configuration
-You can pass your Supabase credentials directly via `--dart-define` to keep your environment secure:
-
+### 2. Frontend
 ```bash
 cd frontend
-flutter run \
-  --dart-define=SUPABASE_URL=https://your-id.supabase.co \
-  --dart-define=SUPABASE_ANON_KEY=your-anon-public-key
+flutter run --dart-define=SUPABASE_URL=YOUR_URL --dart-define=SUPABASE_ANON_KEY=YOUR_KEY
 ```
-
-### 2. Branding (Optional)
-If you change the logo in `assets/icons/app_icon.png`, run:
-```bash
-flutter pub run flutter_launcher_icons
-```
-
-### 3. Build & Deploy
-- **Android/iOS**: Native mobile builds.
-- **Web**: `flutter build web --release`.
-- **Desktop**: Native Windows/macOS/Linux executables.
-
----
-
-## 📈 Roadmap & Recent Progress
-
-- [x] **Phase 1**: Legacy Migration (Node.js → Supabase)
-- [x] **Phase 2**: Real-time Chat & Booking Sync
-- [x] **Phase 3**: Premium UI Overhaul (Light Theme)
-- [x] **Phase 4**: Native Image Upload & Messaging Hub
-- [x] **Phase 5**: APK Stability & Type-Safe Model Hardening
-- [x] **Phase 6**: Deep Linking for Email Confirmation
-- [ ] **Phase 7**: Google Maps & Geolocation Distance Calculating (Coming Soon)
 
 ---
 
 Built with ❤️ by the ProConnect Team.
+🚀 *Modernizing the way people find help, one pin at a time.*

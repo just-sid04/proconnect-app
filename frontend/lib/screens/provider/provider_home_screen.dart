@@ -10,10 +10,10 @@ import 'earnings_screen.dart';
 import 'provider_bookings_screen.dart';
 import 'provider_profile_screen.dart';
 import 'schedule_screen.dart';
-import 'blocked_dates_screen.dart';
 import '../chat_screen.dart';
 import '../common/messages_list_screen.dart';
 import '../../providers/chat_provider.dart';
+import 'provider_reviews_screen.dart';
 
 class ProviderHomeScreen extends StatefulWidget {
   const ProviderHomeScreen({super.key});
@@ -322,13 +322,13 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
                   const SizedBox(width: 10),
                   Expanded(
                       child: _ActionBtn(
-                          icon: Icons.event_busy_rounded,
-                          label: 'Holidays',
-                          color: const Color(0xFF7C3AED),
+                          icon: Icons.rate_review_rounded,
+                          label: 'Reviews',
+                          color: const Color(0xFFF59E0B),
                           onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (_) => const BlockedDatesScreen())))),
+                                  builder: (_) => const ProviderReviewsScreen())))),
                 ]),
               ),
             ),
@@ -458,6 +458,37 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
             ]),
           ],
         ])),
+        const SizedBox(width: 12),
+        // --- Online/Offline Toggle ---
+        Consumer<ProviderProvider>(
+          builder: (context, pp, _) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Transform.scale(
+                scale: 0.8,
+                child: Switch(
+                  value: pp.isTracking,
+                  onChanged: (val) => pp.toggleTracking(val),
+                  activeColor: AppTheme.successColor,
+                  activeTrackColor: AppTheme.successColor.withAlpha(50),
+                  inactiveThumbColor: AppTheme.textSecondary,
+                  inactiveTrackColor: AppTheme.navySurface,
+                  trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                ),
+              ),
+              Text(
+                pp.isTracking ? 'ONLINE' : 'OFFLINE',
+                style: GoogleFonts.inter(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
+                  color: pp.isTracking ? AppTheme.successColor : AppTheme.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 16),
         Container(
           width: 50,
           height: 50,
@@ -478,6 +509,7 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
         ),
       ]),
     );
+
   }
 }
 

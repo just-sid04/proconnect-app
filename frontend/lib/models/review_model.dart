@@ -10,8 +10,10 @@ class Review {
   final String comment;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final User? customer;
+   final User? customer;
   final ServiceProvider? provider;
+  final List<String> images;
+  final String providerResponse;
 
   Review({
     required this.id,
@@ -24,6 +26,8 @@ class Review {
     required this.updatedAt,
     this.customer,
     this.provider,
+    this.images = const [],
+    this.providerResponse = '',
   });
 
   factory Review.fromJson(Map<String, dynamic> json) {
@@ -38,6 +42,8 @@ class Review {
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
       customer: json['customer'] != null ? User.fromJson(json['customer']) : null,
       provider: json['provider'] != null ? ServiceProvider.fromJson(json['provider']) : null,
+      images: json['images'] != null ? List<String>.from(json['images']) : [],
+      providerResponse: json['providerResponse'] ?? '',
     );
   }
 
@@ -50,7 +56,9 @@ class Review {
       'rating': rating,
       'comment': comment,
       'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+      'images': images,
+      'provider_response': providerResponse,
     };
   }
 

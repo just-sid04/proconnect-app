@@ -7,6 +7,8 @@ import '../../providers/auth_provider.dart';
 import '../../providers/booking_provider.dart';
 import '../../utils/theme.dart';
 import '../auth/login_screen.dart';
+import '../../widgets/location_picker_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -169,7 +171,7 @@ class ProfileScreen extends StatelessWidget {
                       onTap: () => _showEditProfileDialog(context, auth)),
                   _Tile(icon: Icons.location_on_rounded, label: 'Location',
                       value: user.location?.fullAddress ?? 'Not set',
-                      onTap: () => _showEditProfileDialog(context, auth)),
+                      onTap: () => _updateLocationOnMap(context, auth)),
                 ]),
                 const SizedBox(height: 16),
                 _Section(title: 'Settings', items: [
@@ -278,6 +280,36 @@ class ProfileScreen extends StatelessWidget {
       content: Text(ok ? 'Profile updated!' : (auth.error ?? 'Failed to update')),
       backgroundColor: ok ? AppTheme.successColor : AppTheme.errorColor,
     ));
+  }
+
+  Future<void> _updateLocationOnMap(BuildContext context, AuthProvider auth) async {
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(builder: (_) => const LocationPickerMap()),
+    );
+
+    if (result != null && result['location'] != null) {
+      final latLng = result['location'] as LatLng;
+      final address = result['address'] as String?;
+
+      final ok = await auth.updateProfile(
+        location: Location(
+          address: address ?? '',
+          city: '',
+          state: '',
+          zipCode: '',
+          latitude: latLng.latitude,
+          longitude: latLng.longitude,
+        ),
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(ok ? 'Location updated!' : 'Failed to update location'),
+          backgroundColor: ok ? AppTheme.successColor : AppTheme.errorColor,
+        ));
+      }
+    }
   }
 
   Future<void> _showPhotoDialog(BuildContext context, AuthProvider auth) async {

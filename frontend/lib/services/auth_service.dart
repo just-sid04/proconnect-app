@@ -15,6 +15,7 @@ class AuthService {
     required String role,
     String? phone,
     Location? location,
+    Map<String, dynamic>? jsonMetadata,
   }) async {
     final response = await _api.post('/auth/register', body: {
       'name': name,
@@ -23,6 +24,7 @@ class AuthService {
       'role': role,
       'phone': phone,
       'location': location?.toJson(),
+      if (jsonMetadata != null) ...jsonMetadata,
     });
 
     if (response.success) {
@@ -79,12 +81,14 @@ class AuthService {
     String? phone,
     Location? location,
     String? profilePhoto,
+    String? fcmToken,
   }) async {
     final body = <String, dynamic>{};
     if (name != null) body['name'] = name;
     if (phone != null) body['phone'] = phone;
     if (location != null) body['location'] = location.toJson();
     if (profilePhoto != null) body['profilePhoto'] = profilePhoto;
+    if (fcmToken != null) body['fcm_token'] = fcmToken;
 
     final response = await _api.put('/users/me', body: body);
 

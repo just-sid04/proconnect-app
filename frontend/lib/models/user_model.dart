@@ -129,5 +129,13 @@ class Location {
     };
   }
 
-  String get fullAddress => '$address, $city, $state $zipCode';
+  String get fullAddress {
+    final parts = [
+      if (address.isNotEmpty) address,
+      if (city.isNotEmpty) city,
+      if (state.isNotEmpty) state,
+      if (zipCode.isNotEmpty) zipCode,
+    ];
+    return parts.isEmpty ? 'Location not set' : parts.join(', ');
+  }
 }

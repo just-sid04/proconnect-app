@@ -1,0 +1,56 @@
+﻿Analyzing frontend...                                           
+
+   info - The private field _isLoading could be 'final' - lib\providers\chat_provider.dart:10:8 - prefer_final_fields
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin\admin_home_screen.dart:130:72 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin\admin_home_screen.dart:649:75 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin\admin_home_screen.dart:774:38 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin\admin_home_screen.dart:843:22 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin\admin_home_screen.dart:845:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin\admin_home_screen.dart:866:43 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\admin\admin_home_screen.dart:907:48 - deprecated_member_use
+   info - Statements in an if should be enclosed in a block - lib\screens\auth\login_screen.dart:50:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\auth\login_screen.dart:52:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\auth\login_screen.dart:124:31 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\auth\login_screen.dart:150:31 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\auth\register_screen.dart:311:35 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\auth\register_screen.dart:325:35 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\auth\register_screen.dart:345:35 - curly_braces_in_flow_control_structures
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre - lib\screens\auth\register_screen.dart:355:37 - deprecated_member_use
+   info - Unnecessary escape in string literal - lib\screens\auth\register_screen.dart:375:54 - unnecessary_string_escapes
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\auth\register_screen.dart:430:67 - deprecated_member_use
+   info - Statements in an if should be enclosed in a block - lib\screens\auth\register_screen.dart:458:35 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\auth\register_screen.dart:460:35 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\auth\register_screen.dart:496:35 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\auth\register_screen.dart:498:35 - curly_braces_in_flow_control_structures
+   info - Use 'const' with the constructor to improve performance - lib\screens\chat_screen.dart:164:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\chat_screen.dart:166:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\screens\chat_screen.dart:166:29 - prefer_const_constructors
+warning - The left operand can't be null, so the right operand is never executed - lib\screens\common\messages_list_screen.dart:49:59 - dead_null_aware_expression
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\customer\book_service_screen.dart:458:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\customer\booking_details_screen.dart:166:48 - deprecated_member_use
+   info - Statements in an if should be enclosed in a block - lib\screens\customer\browse_providers_screen.dart:28:7 - curly_braces_in_flow_control_structures
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\customer\my_bookings_screen.dart:131:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\customer\my_bookings_screen.dart:329:22 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\customer\my_bookings_screen.dart:331:41 - deprecated_member_use
+   info - Don't use 'BuildContext's across async gaps - lib\screens\customer\profile_screen.dart:316:27 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\customer\profile_screen.dart:328:29 - use_build_context_synchronously
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\customer\provider_details_screen.dart:62:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\customer\provider_details_screen.dart:103:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\customer\provider_details_screen.dart:193:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\customer\provider_details_screen.dart:242:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\customer\provider_details_screen.dart:485:24 - deprecated_member_use
+   info - Don't use 'BuildContext's across async gaps - lib\screens\provider\blocked_dates_screen.dart:99:50 - use_build_context_synchronously
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\provider\create_provider_profile_screen.dart:157:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\provider\create_provider_profile_screen.dart:316:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\provider\provider_bookings_screen.dart:173:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\provider\provider_bookings_screen.dart:402:22 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\screens\provider\provider_bookings_screen.dart:404:41 - deprecated_member_use
+   info - Don't use 'BuildContext's across async gaps - lib\screens\provider\provider_profile_screen.dart:539:27 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps - lib\screens\provider\provider_profile_screen.dart:551:29 - use_build_context_synchronously
+   info - Statements in an if should be enclosed in a block - lib\screens\provider\provider_profile_screen.dart:694:39 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\screens\provider\provider_profile_screen.dart:705:39 - curly_braces_in_flow_control_structures
+   info - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor or activeTrackColor instead. This feature was deprecated after v3.31.0-2.0.pre - lib\screens\provider\schedule_screen.dart:217:29 - deprecated_member_use
+warning - Unused import: 'package:firebase_core/firebase_core.dart' - lib\services\notification_service.dart:1:8 - unused_import
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes - lib\widgets\location_picker_map.dart:160:30 - prefer_const_literals_to_create_immutables
+   info - Use 'const' with the constructor to improve performance - lib\widgets\location_picker_map.dart:160:31 - prefer_const_constructors
+

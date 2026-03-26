@@ -21,6 +21,7 @@ class ServiceProvider {
   final DateTime updatedAt;
   final User? user;
   final Category? category;
+  final double? distance;
 
   ServiceProvider({
     required this.id,
@@ -43,6 +44,7 @@ class ServiceProvider {
     required this.updatedAt,
     this.user,
     this.category,
+    this.distance,
   });
 
   factory ServiceProvider.fromJson(Map<String, dynamic> json) {
@@ -67,6 +69,7 @@ class ServiceProvider {
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
       user: json['user'] != null ? User.fromJson(json['user']) : null,
       category: json['category'] != null ? Category.fromJson(json['category']) : null,
+      distance: (json['distance'] as num?)?.toDouble() ?? (json['distance_km'] as num?)?.toDouble(),
     );
   }
 
@@ -90,6 +93,7 @@ class ServiceProvider {
       'documents': documents,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      if (distance != null) 'distance': distance,
     };
   }
 

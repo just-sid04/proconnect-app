@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../models/user_model.dart' as app;
 import '../utils/constants.dart';
@@ -40,7 +41,9 @@ class AuthServiceSupabase {
     required String password,
     required String role,
     String? phone,
+    XFile? profileImage,
     app.Location? location,
+    Map<String, dynamic>? jsonMetadata,
   }) async {
     if (_useSupabase) {
       try {
@@ -53,6 +56,9 @@ class AuthServiceSupabase {
             'phone': phone ?? '',
             'role': role,
             'location': location?.toJson(),
+            'latitude': location?.latitude,
+            'longitude': location?.longitude,
+            if (jsonMetadata != null) ...jsonMetadata,
           },
         );
 
@@ -217,6 +223,7 @@ class AuthServiceSupabase {
     String? phone,
     app.Location? location,
     String? profilePhoto,
+    String? fcmToken,
   }) async {
     if (_useSupabase) {
       try {
@@ -228,8 +235,13 @@ class AuthServiceSupabase {
         };
         if (name != null) updates['name'] = name;
         if (phone != null) updates['phone'] = phone;
-        if (location != null) updates['location'] = location.toJson();
+        if (location != null) {
+          updates['location'] = location.toJson();
+          updates['latitude'] = location.latitude;
+          updates['longitude'] = location.longitude;
+        }
         if (profilePhoto != null) updates['profile_photo'] = profilePhoto;
+        if (fcmToken != null) updates['fcm_token'] = fcmToken;
 
         await _supabase.from('profiles').update(updates).eq('id', userId);
 
@@ -294,7 +306,13 @@ class AuthServiceSupabase {
 
   Future<bool> isLoggedIn() async {
     if (_useSupabase) {
-      return _supabase.auth.currentSession != null;
+      // Check Supabase session first
+      if (_supabase.auth.currentSession != null) return true;
+      
+      // Fallback: Check if we have a saved user profile as a hint 
+      // (useful during app startup while Supabase rehydrates)
+      final savedUser = await getSavedUser();
+      return savedUser != null;
     }
     return await _api.getToken() != null;
   }

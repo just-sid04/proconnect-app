@@ -8,6 +8,10 @@ import '../../utils/theme.dart';
 import '../../utils/constants.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text_field.dart';
+import '../../widgets/location_picker_map.dart';
+import '../../models/user_model.dart';
+import '../../providers/provider_provider.dart';
+import 'package:latlong2/latlong.dart';
 
 class RegisterScreen extends StatefulWidget {
   final String role;
@@ -24,10 +28,15 @@ class _RegisterScreenState extends State<RegisterScreen>
   final _phoneCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
+  final _hourlyRateCtrl = TextEditingController();
+  final _descriptionCtrl = TextEditingController();
+  String? _selectedCategoryId;
   bool _obscurePass = true;
   bool _obscureConfirm = true;
   bool _agreeToTerms = false;
   XFile? _selectedImage;
+  LatLng? _selectedLocation;
+  String? _addressText;
   late AnimationController _animCtrl;
   late Animation<double> _fadeIn;
 
@@ -40,6 +49,12 @@ class _RegisterScreenState extends State<RegisterScreen>
         vsync: this, duration: const Duration(milliseconds: 700));
     _fadeIn = CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut);
     _animCtrl.forward();
+
+    if (_isProvider) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Provider.of<ProviderProvider>(context, listen: false).loadCategories();
+      });
+    }
   }
 
   @override
@@ -49,6 +64,8 @@ class _RegisterScreenState extends State<RegisterScreen>
     _phoneCtrl.dispose();
     _passCtrl.dispose();
     _confirmCtrl.dispose();
+    _hourlyRateCtrl.dispose();
+    _descriptionCtrl.dispose();
     _animCtrl.dispose();
     super.dispose();
   }
@@ -83,6 +100,21 @@ class _RegisterScreenState extends State<RegisterScreen>
       role: widget.role,
       phone: _phoneCtrl.text.trim(),
       profileImage: _selectedImage,
+      location: _selectedLocation != null 
+          ? Location(
+              address: _addressText ?? '',
+              city: '',
+              state: '',
+              zipCode: '',
+              latitude: _selectedLocation!.latitude,
+              longitude: _selectedLocation!.longitude,
+            )
+          : null,
+      jsonMetadata: _isProvider ? {
+        'categoryId': _selectedCategoryId,
+        'hourlyRate': double.tryParse(_hourlyRateCtrl.text) ?? 50.0,
+        'description': _descriptionCtrl.text.trim().isNotEmpty ? _descriptionCtrl.text.trim() : 'Professional ${_isProvider ? "Service Provider" : "User"}',
+      } : null,
     );
     if (!mounted) return;
     if (success) {
@@ -304,7 +336,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                               hint: '+1 000 000 0000',
                               keyboardType: TextInputType.phone,
                               prefixIcon: Icons.phone_outlined,
-                              textInputAction: TextInputAction.next,
+                              textInputAction: _isProvider ? TextInputAction.next : TextInputAction.done,
                               validator: (v) {
                                 if (v == null || v.trim().isEmpty) {
                                   return 'Enter your phone number';
@@ -313,6 +345,92 @@ class _RegisterScreenState extends State<RegisterScreen>
                                   return 'Enter a valid phone number';
                                 return null;
                               },
+                            ),
+
+                            if (_isProvider) ...[
+                              const SizedBox(height: 14),
+                              Consumer<ProviderProvider>(
+                                builder: (context, pp, _) {
+                                  return DropdownButtonFormField<String>(
+                                    value: _selectedCategoryId,
+                                    decoration: InputDecoration(
+                                      labelText: 'Service Category',
+                                      prefixIcon: const Icon(Icons.category_outlined, color: AppTheme.primaryColor),
+                                      filled: true,
+                                      fillColor: AppTheme.navyElevated,
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                                      labelStyle: GoogleFonts.inter(color: AppTheme.textSecondary, fontSize: 14),
+                                    ),
+                                    dropdownColor: AppTheme.navySurface,
+                                    style: GoogleFonts.inter(color: AppTheme.textPrimary, fontSize: 14),
+                                    items: pp.categories.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
+                                    onChanged: (v) => setState(() => _selectedCategoryId = v),
+                                    validator: (v) => v == null ? 'Select a category' : null,
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 14),
+                              CustomTextField(
+                                controller: _hourlyRateCtrl,
+                                label: 'Hourly Rate (\₹)',
+                                hint: 'e.g. 500',
+                                keyboardType: TextInputType.number,
+                                prefixIcon: Icons.currency_rupee_rounded,
+                                textInputAction: TextInputAction.next,
+                                validator: (v) => (v == null || v.isEmpty) ? 'Enter your rate' : null,
+                              ),
+                              const SizedBox(height: 14),
+                              CustomTextField(
+                                controller: _descriptionCtrl,
+                                label: 'About Your Services',
+                                hint: 'Briefly describe what you offer...',
+                                maxLines: 3,
+                                prefixIcon: Icons.description_outlined,
+                                textInputAction: TextInputAction.done,
+                                validator: (v) => (v == null || v.isEmpty) ? 'Enter a description' : null,
+                              ),
+                            ],
+                          ]),
+                          const SizedBox(height: 12),
+
+                          // Location Selection
+                          _card(children: [
+                            Row(children: [
+                              Icon(Icons.location_on_outlined, color: accentCol, size: 20),
+                              const SizedBox(width: 8),
+                              Text('Service Location', 
+                                style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
+                            ]),
+                            const SizedBox(height: 12),
+                            if (_selectedLocation != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Text(
+                                  _addressText ?? 'Location selected',
+                                  style: GoogleFonts.inter(fontSize: 13, color: AppTheme.textSecondary),
+                                ),
+                              ),
+                            OutlinedButton.icon(
+                              onPressed: () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const LocationPickerMap()),
+                                );
+                                if (result != null && result is Map) {
+                                  setState(() {
+                                    _selectedLocation = result['location'];
+                                    _addressText = result['address'];
+                                  });
+                                }
+                              },
+                              icon: const Icon(Icons.map_rounded, size: 18),
+                              label: Text(_selectedLocation == null ? 'Select on Map' : 'Change Location'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: accentCol,
+                                side: BorderSide(color: accentCol.withOpacity(0.5)),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
                             ),
                           ]),
                           const SizedBox(height: 12),

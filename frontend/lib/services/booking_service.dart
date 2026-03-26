@@ -157,6 +157,8 @@ class BookingService {
           'category_id': categoryId,
           'description': description,
           'service_location': serviceLocation.toJson(),
+          'latitude': serviceLocation.latitude,
+          'longitude': serviceLocation.longitude,
           'scheduled_date': scheduledDate,
           'scheduled_time': scheduledTime,
           'estimated_duration': hours,

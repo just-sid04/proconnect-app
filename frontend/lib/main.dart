@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'providers/auth_provider.dart';
 import 'providers/booking_provider.dart';
@@ -20,16 +21,27 @@ import 'screens/admin/admin_home_screen.dart';
 
 import 'utils/theme.dart';
 import 'services/supabase_service.dart';
+import 'services/notification_service.dart';
 import 'utils/constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Supabase (always required — Supabase is the only backend)
+  
+  // Initialize Firebase
   try {
-    await SupabaseService.initialize();
+    await Firebase.initializeApp();
   } catch (e) {
-    debugPrint('Supabase initialization failed: $e');
+    debugPrint('Firebase initialization failed: $e');
+  }
+
+  // Initialize Supabase
+  await SupabaseService.initialize();
+  
+  // Initialize Notifications
+  try {
+    await NotificationService.instance.initialize();
+  } catch (e) {
+    debugPrint('Notification Service initialization failed: $e');
   }
 
   runApp(const ProConnectApp());
@@ -94,7 +106,11 @@ class _AppWithAuthWiringState extends State<_AppWithAuthWiring> {
         '/': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
         '/role-selection': (context) => const RoleSelectionScreen(),
-        '/register': (context) => const RegisterScreen(role: 'customer'),
+        '/register': (context) {
+          final role = ModalRoute.of(context)?.settings.arguments as String? ??
+              'customer';
+          return RegisterScreen(role: role);
+        },
         '/customer-home': (context) => const CustomerHomeScreen(),
         '/provider-home': (context) => const ProviderHomeScreen(),
         '/admin-home': (context) => const AdminHomeScreen(),
