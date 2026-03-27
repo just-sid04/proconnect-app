@@ -101,6 +101,89 @@ class _ProviderProfileScreenState extends State<ProviderProfileScreen> {
           // ── Header ────────────────────────────────────────────────────
           SliverToBoxAdapter(child: _buildHeader(user, p, pp, auth)),
 
+          // ── Availability Status ───────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: p.isOnline
+                      ? LinearGradient(colors: [
+                          AppTheme.successColor.withOpacity(0.15),
+                          AppTheme.successColor.withOpacity(0.05)
+                        ])
+                      : LinearGradient(colors: [
+                          AppTheme.textSecondary.withOpacity(0.1),
+                          AppTheme.textSecondary.withOpacity(0.05)
+                        ]),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: p.isOnline
+                        ? AppTheme.successColor.withOpacity(0.3)
+                        : AppTheme.dividerColor,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: p.isOnline
+                            ? AppTheme.successColor.withOpacity(0.2)
+                            : AppTheme.textSecondary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        p.isOnline
+                            ? Icons.sensors_rounded
+                            : Icons.sensors_off_rounded,
+                        color: p.isOnline
+                            ? AppTheme.successColor
+                            : AppTheme.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            p.isOnline ? 'You are Online' : 'You are Offline',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: p.isOnline
+                                  ? AppTheme.successColor
+                                  : AppTheme.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            p.isOnline
+                                ? 'Customers can see and book you'
+                                : 'You won\'t appear in search results',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: AppTheme.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: p.isOnline,
+                      activeColor: AppTheme.successColor,
+                      onChanged: pp.isLoading
+                          ? null
+                          : (val) => pp.toggleOnline(val),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
           // ── Stats ──────────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(

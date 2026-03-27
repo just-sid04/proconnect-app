@@ -1,9 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/booking_model.dart';
 import '../services/booking_service.dart';
 import '../services/supabase_service.dart';
+import '../services/payment_service.dart';
+import '../models/payment_model.dart';
 import '../utils/constants.dart';
+import '../services/provider_service.dart';
 
 class BookingProvider extends ChangeNotifier {
   final BookingService _bookingService = BookingService();
@@ -21,10 +25,18 @@ class BookingProvider extends ChangeNotifier {
   RealtimeChannel? _customerChannel;
   RealtimeChannel? _providerChannel;
 
+  // Reassignment Logic
+  final Map<String, Timer> _acceptanceTimers = {};
+  final Map<String, bool> _isSearching = {};
+  final ProviderService _providerService = ProviderService();
+
   @override
   void dispose() {
     _customerChannel?.unsubscribe();
     _providerChannel?.unsubscribe();
+    for (var timer in _acceptanceTimers.values) {
+      timer.cancel();
+    }
     super.dispose();
   }
 
@@ -34,6 +46,7 @@ class BookingProvider extends ChangeNotifier {
   Booking? get currentBooking => _currentBooking;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  bool isSearching(String bookingId) => _isSearching[bookingId] ?? false;
 
   List<Booking> getBookingsByStatus(String status) =>
       _bookings.where((b) => b.status == status).toList();
@@ -155,6 +168,12 @@ class BookingProvider extends ChangeNotifier {
         }
         _currentBooking = booking;
         _error = null;
+        
+        // Start reassignment timer for new pending booking
+        if (booking.status == AppConstants.statusPending) {
+          _startAcceptanceTimer(booking.id);
+        }
+        
         notifyListeners();
         return true;
       } else {
@@ -190,6 +209,12 @@ class BookingProvider extends ChangeNotifier {
       );
       // This notification ensures the UI reflects the change INSTANTLY
       notifyListeners();
+
+      // If status changed from pending, cancel timer
+      if (status != AppConstants.statusPending) {
+        _acceptanceTimers[id]?.cancel();
+        _acceptanceTimers.remove(id);
+      }
     }
 
     // Start background loading WITHOUT notifying again immediately
@@ -251,6 +276,68 @@ class BookingProvider extends ChangeNotifier {
         cancellationReason: reason,
       );
 
+  // ─── Payment Operations ───────────────────────────────────────────────────
+
+  final _paymentService = PaymentService();
+
+  Future<bool> payAdvance(Booking booking) async {
+    _setLoading(true);
+    _error = null;
+
+    try {
+      final success = await _paymentService.simulatePayment(
+        bookingId: booking.id,
+        customerId: booking.customerId,
+        providerId: booking.provider?.userId ?? booking.providerId,
+        amount: booking.price.totalAmount * 0.2, // 20% Advance
+        type: PaymentType.advance_20,
+      );
+
+      if (success) {
+        // Refresh to get updated flags (advance_paid)
+        await getBookingById(booking.id);
+        return true;
+      } else {
+        _error = 'Simulated payment failed.';
+        return false;
+      }
+    } catch (e) {
+      _error = 'Error during payment simulation.';
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> payBalance(Booking booking) async {
+    _setLoading(true);
+    _error = null;
+
+    try {
+      final success = await _paymentService.simulatePayment(
+        bookingId: booking.id,
+        customerId: booking.customerId,
+        providerId: booking.provider?.userId ?? booking.providerId,
+        amount: booking.price.totalAmount * 0.8, // 80% Balance
+        type: PaymentType.final_80,
+      );
+
+      if (success) {
+        // Refresh to get updated flags (final_paid)
+        await getBookingById(booking.id);
+        return true;
+      } else {
+        _error = 'Simulated payment failed.';
+        return false;
+      }
+    } catch (e) {
+      _error = 'Error during payment simulation.';
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<bool> deleteBooking(String id) async {
     _setLoading(true);
     _error = null;
@@ -299,6 +386,11 @@ class BookingProvider extends ChangeNotifier {
     _currentBooking = null;
     _isLoading = false;
     _error = null;
+    for (var timer in _acceptanceTimers.values) {
+      timer.cancel();
+    }
+    _acceptanceTimers.clear();
+    _isSearching.clear();
     notifyListeners();
   }
 
@@ -399,11 +491,24 @@ class BookingProvider extends ChangeNotifier {
       final res = await _bookingService.getBookingById(newId);
       if (res.success && res.data != null) {
         _bookings.insert(0, res.data!);
+        
+        // Start timer for new pending booking found via realtime
+        if (res.data!.status == AppConstants.statusPending) {
+          _startAcceptanceTimer(res.data!.id);
+        }
+        
         notifyListeners();
       }
     } else if (payload.eventType == PostgresChangeEvent.update) {
       final id = payload.newRecord['id'] as String?;
       if (id == null) return;
+
+      // Cancel timer if status changed via realtime
+      final newStatus = payload.newRecord['status'] as String?;
+      if (newStatus != AppConstants.statusPending) {
+        _acceptanceTimers[id]?.cancel();
+        _acceptanceTimers.remove(id);
+      }
 
       // IDEMPOTENCY: Check if we already have this update locally (from optimistic UI)
       final existingIndex = _bookings.indexWhere((b) => b.id == id);
@@ -432,6 +537,65 @@ class BookingProvider extends ChangeNotifier {
       if (id == null) return;
       _bookings.removeWhere((b) => b.id == id);
       if (_currentBooking?.id == id) _currentBooking = null;
+      notifyListeners();
+    }
+  }
+
+  // ─── Reassignment Internals ────────────────────────────────────────────────
+
+  void _startAcceptanceTimer(String bookingId) {
+    _acceptanceTimers[bookingId]?.cancel();
+    _acceptanceTimers[bookingId] = Timer(const Duration(seconds: 120), () {
+      _handleBookingTimeout(bookingId);
+    });
+  }
+
+  Future<void> _handleBookingTimeout(String bookingId) async {
+    final index = _bookings.indexWhere((b) => b.id == bookingId);
+    if (index == -1) return;
+    
+    final booking = _bookings[index];
+    if (booking.status != AppConstants.statusPending) return;
+
+    debugPrint('BookingProvider: Timeout reached for booking $bookingId. Reassigning...');
+    
+    _isSearching[bookingId] = true;
+    notifyListeners();
+
+    try {
+      // 1. Find next best provider
+      final nearbyResponse = await _providerService.getNearbyProviders(
+        latitude: booking.serviceLocation.latitude ?? 0.0,
+        longitude: booking.serviceLocation.longitude ?? 0.0,
+        radius: 20, // Search a bit wider for reassignment
+      );
+
+      if (nearbyResponse.success && nearbyResponse.data != null) {
+        final potentials = nearbyResponse.data!
+            .where((p) => p.id != booking.providerId && p.isOnline)
+            .toList();
+
+        if (potentials.isNotEmpty) {
+          final nextProvider = potentials.first;
+          debugPrint('BookingProvider: Reassigning to ${nextProvider.id}');
+
+          // 2. Update booking in DB
+          final sb = SupabaseService.instance.client;
+          await sb.from('bookings').update({
+            'provider_id': nextProvider.id,
+            'updated_at': DateTime.now().toIso8601String(),
+          }).eq('id', bookingId);
+
+          // Realtime will handle the local state update
+        } else {
+          debugPrint('BookingProvider: No other providers available for reassignment.');
+        }
+      }
+    } catch (e) {
+      debugPrint('BookingProvider: Error during reassignment: $e');
+    } finally {
+      _isSearching[bookingId] = false;
+      _acceptanceTimers.remove(bookingId);
       notifyListeners();
     }
   }

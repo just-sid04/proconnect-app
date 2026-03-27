@@ -370,8 +370,8 @@ class _ProviderListCardState extends State<ProviderListCard> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppTheme.navySurface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppTheme.dividerColor, width: 1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.dividerColor),
             boxShadow: AppTheme.cardShadow,
           ),
           child: Row(children: [
@@ -415,6 +415,28 @@ class _ProviderListCardState extends State<ProviderListCard> {
                       child: const Icon(Icons.check,
                           size: 10, color: Colors.white),
                     )),
+              // Online Indicator (Live Pulse)
+              if (p.isOnline == true)
+                Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      width: 14,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: AppTheme.successColor,
+                        shape: BoxShape.circle,
+                        border:
+                            Border.all(color: AppTheme.navySurface, width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.successColor.withOpacity(0.5),
+                            blurRadius: 4,
+                            spreadRadius: 1,
+                          )
+                        ],
+                      ),
+                    )),
             ]),
             const SizedBox(width: 14),
             Expanded(
@@ -435,18 +457,49 @@ class _ProviderListCardState extends State<ProviderListCard> {
                           color: AppTheme.primaryColor, size: 16),
                   ]),
                   const SizedBox(height: 3),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withAlpha(30),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Text(p.category?.name ?? 'Service',
-                        style: GoogleFonts.inter(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.primaryColor)),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withAlpha(30),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Text(p.category?.name ?? 'Service',
+                            style: GoogleFonts.inter(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.primaryColor)),
+                      ),
+                      if (p.isAvailableNow == true) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppTheme.successColor.withAlpha(30),
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                                color: AppTheme.successColor.withAlpha(60)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.flash_on_rounded,
+                                  size: 10, color: AppTheme.successColor),
+                              const SizedBox(width: 4),
+                              Text('AVAILABLE NOW',
+                                  style: GoogleFonts.inter(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppTheme.successColor,
+                                      letterSpacing: 0.5)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Row(children: [
@@ -469,7 +522,8 @@ class _ProviderListCardState extends State<ProviderListCard> {
                       ]),
                     ),
                     const SizedBox(width: 10),
-                    Text('₹${(p.hourlyRate as double).toStringAsFixed(0)}/hr',
+                    Text(
+                        '₹${(p.hourlyRate as num).toDouble().toStringAsFixed(0)}/hr',
                         style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,

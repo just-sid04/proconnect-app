@@ -8,6 +8,8 @@ import 'providers/booking_provider.dart';
 import 'providers/provider_provider.dart';
 import 'providers/review_provider.dart';
 import 'providers/chat_provider.dart';
+import 'providers/notification_provider.dart';
+import 'providers/wallet_provider.dart';
 
 import 'screens/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
@@ -58,6 +60,8 @@ class ProConnectApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BookingProvider()),
         ChangeNotifierProvider(create: (_) => ProviderProvider()),
         ChangeNotifierProvider(create: (_) => ReviewProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProvider(create: (_) => WalletProvider()),
         ChangeNotifierProxyProvider<AuthProvider, ChatProvider?>(
           create: (_) => null,
           update: (_, auth, previous) {

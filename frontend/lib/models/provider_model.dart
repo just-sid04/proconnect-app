@@ -22,6 +22,9 @@ class ServiceProvider {
   final User? user;
   final Category? category;
   final double? distance;
+  final bool isOnline;
+  final DateTime lastActiveAt;
+  final bool isAvailableNow;
 
   ServiceProvider({
     required this.id,
@@ -45,6 +48,9 @@ class ServiceProvider {
     this.user,
     this.category,
     this.distance,
+    this.isOnline = true,
+    required this.lastActiveAt,
+    this.isAvailableNow = false,
   });
 
   factory ServiceProvider.fromJson(Map<String, dynamic> json) {
@@ -70,6 +76,9 @@ class ServiceProvider {
       user: json['user'] != null ? User.fromJson(json['user']) : null,
       category: json['category'] != null ? Category.fromJson(json['category']) : null,
       distance: (json['distance'] as num?)?.toDouble() ?? (json['distance_km'] as num?)?.toDouble(),
+      isOnline: json['isOnline'] ?? true,
+      lastActiveAt: DateTime.tryParse(json['lastActiveAt'] ?? '') ?? DateTime.now(),
+      isAvailableNow: json['isAvailableNow'] ?? false,
     );
   }
 
@@ -94,6 +103,8 @@ class ServiceProvider {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       if (distance != null) 'distance': distance,
+      'is_online': isOnline,
+      'last_active_at': lastActiveAt.toIso8601String(),
     };
   }
 

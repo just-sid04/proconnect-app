@@ -416,7 +416,7 @@ class ProviderProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Toggle Tracking (Online/Offline)
+  // Toggle Tracking (Location Heartbeat)
   Future<void> toggleTracking(bool value) async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
@@ -426,6 +426,10 @@ class ProviderProvider extends ChangeNotifier {
       if (hasPermission) {
         await LocationService.instance.startTracking(userId: userId, isProvider: true);
         _isTracking = true;
+        // Also ensure online status is true when tracking starts
+        if (_currentProvider != null && !_currentProvider!.isOnline) {
+          await toggleOnline(true);
+        }
       } else {
         _error = "Location permission denied. Cannot go online.";
       }
@@ -434,6 +438,39 @@ class ProviderProvider extends ChangeNotifier {
       _isTracking = false;
     }
     notifyListeners();
+  }
+
+  // Toggle Online Status (Manual)
+  Future<bool> toggleOnline(bool value) async {
+    if (_currentProvider == null) return false;
+
+    _setLoading(true);
+    _error = null;
+
+    try {
+      final response = await _providerService.updateOnlineStatus(_currentProvider!.id, value);
+
+      if (response.success) {
+        _currentProvider = response.data;
+        // Synchronize tracking state with online state
+        if (!value && _isTracking) {
+          await toggleTracking(false);
+        }
+        _error = null;
+        notifyListeners();
+        return true;
+      } else {
+        _error = response.message;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _error = ErrorMessages.genericError;
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoading(false);
+    }
   }
 
 

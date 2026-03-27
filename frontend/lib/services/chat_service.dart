@@ -4,14 +4,18 @@ import 'supabase_service.dart';
 class ChatService {
   static final client = SupabaseService.instance.client;
 
-  /// Stream of messages for a specific booking
+  /// Stream of messages for a specific booking using standard .stream()
   static Stream<List<Message>> getMessagesStream(String bookingId) {
     return client
         .from('messages')
         .stream(primaryKey: ['id'])
         .eq('booking_id', bookingId)
-        .order('created_at', ascending: true)
-        .map((data) => data.map((json) => Message.fromJson(json)).toList());
+        .map((data) {
+          final msgs = data.map((json) => Message.fromJson(json)).toList();
+          // Sort in Dart to ensure consistency
+          msgs.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+          return msgs;
+        });
   }
 
   /// Send a message

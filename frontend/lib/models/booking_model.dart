@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'user_model.dart';
 import 'provider_model.dart';
-
 class Booking {
   final String id;
   final String customerId;
@@ -22,6 +21,8 @@ class Booking {
   final DateTime? completedAt;
   final DateTime? cancelledAt;
   final String? cancellationReason;
+  final bool advancePaid;
+  final bool finalPaid;
   final User? customer;
   final ServiceProvider? provider;
 
@@ -45,6 +46,8 @@ class Booking {
     this.completedAt,
     this.cancelledAt,
     this.cancellationReason,
+    this.advancePaid = false,
+    this.finalPaid = false,
     this.customer,
     this.provider,
   });
@@ -77,6 +80,8 @@ class Booking {
           ? DateTime.tryParse(json['cancelledAt'])
           : null,
       cancellationReason: json['cancellationReason'],
+      advancePaid: json['advancePaid'] ?? false,
+      finalPaid: json['finalPaid'] ?? false,
       customer:
           json['customer'] != null ? User.fromJson(json['customer']) : null,
       provider: json['provider'] != null
@@ -105,7 +110,9 @@ class Booking {
       'startedAt': startedAt?.toIso8601String(),
       'completedAt': completedAt?.toIso8601String(),
       'cancelledAt': cancelledAt?.toIso8601String(),
-      'cancellationReason': cancellationReason,
+      'cancellation_reason': cancellationReason,
+      'advance_paid': advancePaid,
+      'final_paid': finalPaid,
     };
   }
 
@@ -129,6 +136,8 @@ class Booking {
     DateTime? completedAt,
     DateTime? cancelledAt,
     String? cancellationReason,
+    bool? advancePaid,
+    bool? finalPaid,
     User? customer,
     ServiceProvider? provider,
   }) {
@@ -152,6 +161,8 @@ class Booking {
       completedAt: completedAt ?? this.completedAt,
       cancelledAt: cancelledAt ?? this.cancelledAt,
       cancellationReason: cancellationReason ?? this.cancellationReason,
+      advancePaid: advancePaid ?? this.advancePaid,
+      finalPaid: finalPaid ?? this.finalPaid,
       customer: customer ?? this.customer,
       provider: provider ?? this.provider,
     );

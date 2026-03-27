@@ -6,9 +6,11 @@ import 'dart:io' as io;
 
 import '../../providers/booking_provider.dart';
 import '../../providers/review_provider.dart';
+import '../../models/booking_model.dart';
 import '../../utils/theme.dart';
 import '../chat_screen.dart';
 import 'provider_details_screen.dart';
+import 'book_service_screen.dart';
 
 class BookingDetailsScreen extends StatefulWidget {
   final String bookingId;
@@ -102,6 +104,101 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
     }
   }
 
+  Future<void> _payAdvance(Booking booking) async {
+    final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+    final success = await bookingProvider.payAdvance(booking);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Advance payment successful!'
+              : (bookingProvider.error ?? 'Payment failed.'),
+        ),
+        backgroundColor: success ? AppTheme.successColor : AppTheme.errorColor,
+      ),
+    );
+  }
+
+  Future<void> _payBalance(Booking booking) async {
+    final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+    final success = await bookingProvider.payBalance(booking);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Final balance paid successfully!'
+              : (bookingProvider.error ?? 'Payment failed.'),
+        ),
+        backgroundColor: success ? AppTheme.successColor : AppTheme.errorColor,
+      ),
+    );
+  }
+
+  Future<void> _rebook(Booking booking) async {
+    if (booking.provider == null) return;
+
+    final provider = booking.provider!;
+    final isOnline = provider.isOnline;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Book Again?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Do you want to book ${provider.displayName} again for this service?'),
+            const SizedBox(height: 12),
+            if (!isOnline)
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.warningColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: AppTheme.warningColor, size: 16),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Provider is currently offline, but you can still send a request.',
+                        style: TextStyle(fontSize: 11, color: AppTheme.warningColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Yes, Rebook'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BookServiceScreen(provider: provider),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -137,22 +234,40 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        booking.statusDisplay,
+                        bookingProvider.isSearching(booking.id) 
+                            ? 'SEARCHING FOR PRO...' 
+                            : booking.statusDisplay,
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: booking.statusColor,
+                          color: bookingProvider.isSearching(booking.id)
+                              ? AppTheme.primaryColor
+                              : booking.statusColor,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _getStatusMessage(booking.status),
+                        bookingProvider.isSearching(booking.id)
+                            ? 'The previous provider didn\'t respond. We are finding a new one for you right now!'
+                            : _getStatusMessage(booking.status),
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: booking.statusColor),
+                        style: TextStyle(
+                          color: bookingProvider.isSearching(booking.id)
+                              ? AppTheme.primaryColor
+                              : booking.statusColor,
+                        ),
                       ),
                     ],
                   ),
                 ),
+                if (bookingProvider.isSearching(booking.id))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: LinearProgressIndicator(
+                      backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                      valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+                    ),
+                  ),
                 const SizedBox(height: 24),
                 const _SectionTitle('Service Provider'),
                 Card(
@@ -269,7 +384,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              '\$${booking.price.grandTotal.toStringAsFixed(2)}',
+                              '₹${booking.price.grandTotal.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: AppTheme.primaryColor,
@@ -281,6 +396,50 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                     ],
                   ),
                 ),
+                if (booking.isAccepted && !booking.advancePaid) ...[
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: bookingProvider.isLoading ? null : () => _payAdvance(booking),
+                      icon: bookingProvider.isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.payment),
+                      label: Text(bookingProvider.isLoading ? 'Processing...' : 'Pay Advance (20%)'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.successColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                  ),
+                ],
+                if (booking.isCompleted && !booking.finalPaid) ...[
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: bookingProvider.isLoading ? null : () => _payBalance(booking),
+                      icon: bookingProvider.isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.account_balance_wallet),
+                      label: Text(bookingProvider.isLoading ? 'Processing...' : 'Pay Balance (80%)'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.successColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 if (booking.isPending || booking.isAccepted)
                   SizedBox(
@@ -302,6 +461,20 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
                       onPressed: () => _showReviewDialog(booking.provider!.id),
                       icon: const Icon(Icons.star),
                       label: const Text('Leave a Review'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _rebook(booking),
+                      icon: const Icon(Icons.replay_rounded),
+                      label: const Text('Book Again'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primaryColor,
+                        side: const BorderSide(color: AppTheme.primaryColor),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
                     ),
                   ),
                 ],
@@ -351,7 +524,7 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 
 class _ReviewDialog extends StatefulWidget {
   final String providerId;
-  const _ReviewDialog({super.key, required this.providerId});
+  const _ReviewDialog({required this.providerId});
 
   @override
   State<_ReviewDialog> createState() => _ReviewDialogState();
@@ -521,7 +694,7 @@ class _ReviewDialogState extends State<_ReviewDialog> {
 
 class _SectionTitle extends StatelessWidget {
   final String title;
-  const _SectionTitle(this.title, {super.key});
+  const _SectionTitle(this.title);
 
   @override
   Widget build(BuildContext context) {
@@ -565,7 +738,7 @@ class _PriceRow extends StatelessWidget {
   const _PriceRow({
     required this.label,
     required this.value,
-    this.prefix = '\$',
+    this.prefix = '₹',
     this.suffix = '',
   });
 

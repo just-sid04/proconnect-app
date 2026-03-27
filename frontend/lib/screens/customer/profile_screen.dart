@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../models/user_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/booking_provider.dart';
+import '../../providers/wallet_provider.dart';
+import 'wallet_screen.dart';
 import '../../utils/theme.dart';
 import '../auth/login_screen.dart';
 import '../../widgets/location_picker_map.dart';
@@ -152,9 +154,14 @@ class ProfileScreen extends StatelessWidget {
                 child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
                   _Stat(value: '${bp.completedBookings.length}', label: 'Jobs Done',  color: AppTheme.successColor),
                   _Vline(),
-                  _Stat(value: '${bp.bookings.length}', label: 'Total Bookings', color: AppTheme.primaryColor),
+                  Consumer<WalletProvider>(
+                    builder: (context, wp, _) => GestureDetector(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletScreen())),
+                      child: _Stat(value: '₹${wp.balance.toStringAsFixed(0)}', label: 'Wallet', color: AppTheme.accentColor),
+                    ),
+                  ),
                   _Vline(),
-                  _Stat(value: user.phone.isNotEmpty ? '✓' : '—', label: 'Phone', color: AppTheme.accentColor),
+                  _Stat(value: '${bp.bookings.length}', label: 'Total Jobs', color: AppTheme.primaryColor),
                 ]),
               ),
             ),
@@ -165,6 +172,15 @@ class ProfileScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
+                _Section(title: 'Earnings & Rewards', items: [
+                  _Tile(
+                    icon: Icons.account_balance_wallet_rounded,
+                    label: 'ProConnect Wallet',
+                    value: 'View balance & rewards',
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletScreen())),
+                  ),
+                ]),
+                const SizedBox(height: 16),
                 _Section(title: 'Personal Information', items: [
                   _Tile(icon: Icons.phone_rounded,     label: 'Phone',
                       value: user.phone.isNotEmpty ? user.phone : 'Not set',

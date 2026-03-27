@@ -26,10 +26,12 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _msgController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  late Stream<List<Message>> _messageStream;
 
   @override
   void initState() {
     super.initState();
+    _messageStream = ChatService.getMessagesStream(widget.bookingId);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final cp = Provider.of<ChatProvider?>(context, listen: false);
       if (cp != null) {
@@ -61,12 +63,25 @@ class _ChatScreenState extends State<ChatScreen> {
         senderId: senderId,
         text: text,
       );
+      _scrollToBottom();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${e.toString()}')),
         );
       }
+    }
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      });
     }
   }
 
@@ -111,7 +126,7 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           Expanded(
             child: StreamBuilder<List<Message>>(
-              stream: ChatService.getMessagesStream(widget.bookingId),
+              stream: _messageStream,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -121,6 +136,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 }
 
                 final messages = snapshot.data ?? [];
+                if (messages.isNotEmpty) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+                }
+
                 if (messages.isEmpty) {
                   return Center(
                     child: Column(

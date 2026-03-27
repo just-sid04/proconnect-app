@@ -1,87 +1,75 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../services/supabase_service.dart';
+import '../models/notification_model.dart';
 
 class NotificationService {
-  static final NotificationService instance = NotificationService._internal();
-  NotificationService._internal();
+  NotificationService._();
+  static final NotificationService instance = NotificationService._();
 
-  FirebaseMessaging? get _fcm {
-    try {
-      return FirebaseMessaging.instance;
-    } catch (_) {
-      return null;
-    }
-  }
-  final SupabaseClient _supabase = SupabaseService.instance.client;
+  final SupabaseClient _sb = Supabase.instance.client;
 
   Future<void> initialize() async {
-    final fcm = _fcm;
-    if (fcm == null) return;
-
-    // 1. Request Permission
-    NotificationSettings settings = await fcm.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      debugPrint('User granted notification permission');
-    } else {
-      debugPrint('User declined or has not accepted permission');
-    }
-
-    // 2. Handle foreground messages
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint('Got a message whilst in the foreground!');
-      debugPrint('Message data: ${message.data}');
-
-      if (message.notification != null) {
-        debugPrint('Message also contained a notification: ${message.notification}');
-      }
-    });
-
-    // 3. Handle notification click when app is in background or terminated
-    fcm.getInitialMessage().then((message) {
-      if (message != null) {
-        _handleMessageOpen(message);
-      }
-    });
-
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpen);
-
-    // 4. Update Token
-    await updateToken();
+    // Initial setup if needed (e.g. FCM permission requests)
+    // For now it's just a placeholder to satisfy main.dart
   }
 
   Future<void> updateToken() async {
+    // Placeholder for FCM token sync logic.
+    // In a real implementation with firebase_messaging, this would:
+    // 1. Get current token
+    // 2. Update profiles table with the token for the current user.
+    debugPrint('NotificationService: updateToken() called (Stub)');
+  }
+
+  Future<List<AppNotification>> getNotifications() async {
     try {
-      final user = _supabase.auth.currentUser;
-      if (user == null) return;
-
-      final fcm = _fcm;
-      if (fcm == null) return;
-
-      String? token = await fcm.getToken();
-      if (token != null) {
-        debugPrint('FCM Token: $token');
-        
-        // Save to Supabase profiles
-        await _supabase.from('profiles').update({
-          'fcm_token': token,
-          'updated_at': DateTime.now().toIso8601String(),
-        }).eq('id', user.id);
-      }
+      final response = await _sb
+          .from('notifications')
+          .select()
+          .order('created_at', ascending: false);
+      
+      return (response as List)
+          .map((n) => AppNotification.fromJson(n))
+          .toList();
     } catch (e) {
-      debugPrint('Error updating FCM token: $e');
+      rethrow;
     }
   }
 
-  void _handleMessageOpen(RemoteMessage message) {
-    debugPrint('Notification opened app: ${message.data}');
-    // Here we can navigate to specific screens (e.g., Booking Details or Chat)
+  Future<void> markAsRead(String notificationId) async {
+    await _sb
+        .from('notifications')
+        .update({'is_read': true})
+        .eq('id', notificationId);
+  }
+
+  Future<void> markAllAsRead() async {
+    final userId = _sb.auth.currentUser?.id;
+    if (userId == null) return;
+    await _sb
+        .from('notifications')
+        .update({'is_read': true})
+        .eq('user_id', userId);
+  }
+
+  RealtimeChannel subscribeToNotifications(Function(AppNotification) onNew) {
+    final userId = _sb.auth.currentUser?.id;
+    final channel = _sb.channel('public:notifications:user=$userId');
+    
+    channel.onPostgresChanges(
+      event: PostgresChangeEvent.insert,
+      schema: 'public',
+      table: 'notifications',
+      filter: PostgresChangeFilter(
+        type: PostgresChangeFilterType.eq,
+        column: 'user_id',
+        value: userId,
+      ),
+      callback: (payload) {
+        onNew(AppNotification.fromJson(payload.newRecord));
+      },
+    ).subscribe();
+
+    return channel;
   }
 }

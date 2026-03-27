@@ -86,6 +86,7 @@ class ProviderService {
           'current_lat': latitude,
           'current_lng': longitude,
           'radius_km': radius.toDouble(),
+          'only_online': true, // Default to filtering offline providers
         });
 
         final list = (data as List).map((r) {
@@ -107,6 +108,11 @@ class ProviderService {
             'id': json['categoryId'],
             'name': json['categoryName'],
           };
+
+          // Map new fields
+          json['isOnline'] = json['isOnline'];
+          json['lastActiveAt'] = json['lastActiveAt'];
+          json['isAvailableNow'] = json['isAvailableNow'];
 
           return ServiceProvider.fromJson(json);
         }).toList();
@@ -438,5 +444,43 @@ class ProviderService {
       }
     }
     return ApiResponse.error('Not supported without Supabase');
+  }
+
+  // Update online status
+  Future<ApiResponse<ServiceProvider>> updateOnlineStatus(String id, bool isOnline) async {
+    if (_useSupabase) {
+      try {
+        final data = await _sb
+            .from('service_providers')
+            .update({
+              'is_online': isOnline,
+              'last_active_at': DateTime.now().toIso8601String(),
+            })
+            .eq('id', id)
+            .select('*, user:profiles!user_id(*), category:categories!category_id(*)')
+            .single();
+        return ApiResponse.success(ServiceProvider.fromJson(
+            supabaseRowToJson(Map<String, dynamic>.from(data as Map))));
+      } catch (e) {
+        return ApiResponse.error(e.toString());
+      }
+    }
+    return ApiResponse.error('Not supported without Supabase');
+  }
+
+  // Update last active activity
+  Future<void> updateActivity() async {
+    if (_useSupabase) {
+      try {
+        final userId = _sb.auth.currentUser?.id;
+        if (userId != null) {
+          await _sb.from('service_providers').update({
+            'last_active_at': DateTime.now().toIso8601String(),
+          }).eq('user_id', userId);
+        }
+      } catch (e) {
+        // Silently fail for background heartbeat
+      }
+    }
   }
 }

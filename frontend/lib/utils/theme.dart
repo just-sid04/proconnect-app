@@ -66,7 +66,7 @@ class AppTheme {
 
   // ─── Shadow helpers ────────────────────────────────────────────────────────
   static List<BoxShadow> glowShadow(Color color,
-          {double blur = 20, double spread = 0}) =>
+          {double blur = 12, double spread = 0}) =>
       [
         BoxShadow(
             color: color.withAlpha(40), blurRadius: blur, spreadRadius: spread),
@@ -74,7 +74,7 @@ class AppTheme {
 
   static List<BoxShadow> get cardShadow => [
         const BoxShadow(
-            color: Color(0x0C000000), blurRadius: 12, offset: Offset(0, 4)),
+            color: Color(0x0C000000), blurRadius: 8, offset: Offset(0, 3)),
       ];
 
   // ─── Theme ─────────────────────────────────────────────────────────────────

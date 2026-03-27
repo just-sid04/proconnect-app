@@ -14,6 +14,8 @@ import '../chat_screen.dart';
 import '../common/messages_list_screen.dart';
 import '../../providers/chat_provider.dart';
 import 'provider_reviews_screen.dart';
+import '../../providers/notification_provider.dart';
+import '../common/notifications_screen.dart';
 
 class ProviderHomeScreen extends StatefulWidget {
   const ProviderHomeScreen({super.key});
@@ -204,7 +206,10 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<NotificationProvider>().init();
+      _loadData();
+    });
   }
 
   Future<void> _loadData() async {
@@ -507,6 +512,8 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
                           fontWeight: FontWeight.w800,
                           color: Colors.white))),
         ),
+        const SizedBox(width: 12),
+        const _NotificationBell(),
       ]),
     );
 
@@ -816,4 +823,41 @@ class _EmptyBox extends StatelessWidget {
             style:
                 GoogleFonts.inter(color: AppTheme.textSecondary, fontSize: 14)),
       );
+}
+
+class _NotificationBell extends StatelessWidget {
+  const _NotificationBell();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<NotificationProvider>(
+      builder: (context, np, _) {
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.notifications_outlined, color: AppTheme.textPrimary, size: 28),
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
+            ),
+            if (np.unreadCount > 0)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(color: AppTheme.errorColor, shape: BoxShape.circle),
+                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                  child: Center(
+                    child: Text(
+                      '${np.unreadCount}',
+                      style: GoogleFonts.inter(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
 }
