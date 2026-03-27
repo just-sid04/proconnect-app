@@ -3,6 +3,7 @@ import '../utils/constants.dart';
 import '../utils/supabase_mapper.dart';
 import 'api_service.dart';
 import 'supabase_service.dart';
+import 'event_service.dart';
 
 /// Supabase PostgREST join string used for all booking queries.
 /// CRITICAL: PostgREST does NOT allow whitespace inside the selection parens.
@@ -177,6 +178,10 @@ class BookingService {
             .select(_kBookingJoin)
             .single()
             .timeout(const Duration(seconds: 15));
+
+        final bookingId = data['id'] as String;
+        EventService.logBookingCreated(bookingId, categoryId);
+
         return ApiResponse.success(
           Booking.fromJson(supabaseRowToJson(Map<String, dynamic>.from(data as Map))),
         );

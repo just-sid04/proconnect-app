@@ -16,6 +16,7 @@ import '../../providers/chat_provider.dart';
 import 'provider_reviews_screen.dart';
 import '../../providers/notification_provider.dart';
 import '../common/notifications_screen.dart';
+import 'business_insights_screen.dart';
 
 class ProviderHomeScreen extends StatefulWidget {
   const ProviderHomeScreen({super.key});
@@ -307,34 +308,51 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: Row(children: [
-                  Expanded(
-                      child: _ActionBtn(
-                          icon: Icons.calendar_today_rounded,
-                          label: 'Bookings',
-                          color: AppTheme.primaryColor,
-                          onTap: widget.openBookings)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                      child: _ActionBtn(
-                          icon: Icons.access_time_rounded,
-                          label: 'Schedule',
-                          color: AppTheme.accentColor,
-                          onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const ScheduleScreen())))),
-                  const SizedBox(width: 10),
-                  Expanded(
-                      child: _ActionBtn(
-                          icon: Icons.rate_review_rounded,
-                          label: 'Reviews',
-                          color: const Color(0xFFF59E0B),
-                          onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const ProviderReviewsScreen())))),
-                ]),
+                child: Column(
+                  children: [
+                    Row(children: [
+                      Expanded(
+                          child: _ActionBtn(
+                              icon: Icons.analytics_rounded,
+                              label: 'Insights',
+                              color: AppTheme.successColor,
+                              onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const BusinessInsightsScreen())))),
+                      const SizedBox(width: 10),
+                      Expanded(
+                          child: _ActionBtn(
+                              icon: Icons.calendar_today_rounded,
+                              label: 'Bookings',
+                              color: AppTheme.primaryColor,
+                              onTap: widget.openBookings)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                          child: _ActionBtn(
+                              icon: Icons.access_time_rounded,
+                              label: 'Schedule',
+                              color: AppTheme.accentColor,
+                              onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const ScheduleScreen())))),
+                    ]),
+                    const SizedBox(height: 10),
+                    Row(children: [
+                      Expanded(
+                          child: _ActionBtn(
+                              icon: Icons.rate_review_rounded,
+                              label: 'Reviews',
+                              color: const Color(0xFFF59E0B),
+                              onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const ProviderReviewsScreen())))),
+                      const Spacer(flex: 2),
+                    ]),
+                  ],
+                ),
               ),
             ),
 

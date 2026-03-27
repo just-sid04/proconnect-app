@@ -6,6 +6,7 @@ import '../../providers/provider_provider.dart';
 import '../../providers/review_provider.dart';
 import '../../utils/theme.dart';
 import 'book_service_screen.dart';
+import '../../services/event_service.dart';
 
 class ProviderDetailsScreen extends StatefulWidget {
   final String providerId;
@@ -34,6 +35,7 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
       providerProvider.getProviderById(widget.providerId),
       reviewProvider.loadReviews(providerId: widget.providerId, refresh: true),
       reviewProvider.getRatingSummary(widget.providerId),
+      EventService.logProfileView(widget.providerId),
     ]);
   }
 

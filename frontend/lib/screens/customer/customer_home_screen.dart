@@ -17,6 +17,7 @@ import '../../providers/chat_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../common/notifications_screen.dart';
 import 'nearby_providers_map.dart';
+import '../../services/event_service.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({super.key});
@@ -202,6 +203,7 @@ class _HomeTabState extends State<HomeTab> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<NotificationProvider>().init();
+      EventService.logAppOpen();
       _loadData();
     });
   }
@@ -289,11 +291,67 @@ class _HomeTabState extends State<HomeTab> {
                         category: pp.categories[i],
                         onTap: () {
                           pp.setSelectedCategory(pp.categories[i]);
+                          EventService.logCategoryClick(
+                            pp.categories[i].id, 
+                            pp.categories[i].name
+                          );
                           widget.openBrowse();
                         },
                       ),
                     ),
             ),
+          ),
+
+          // ── AI Recommendations ─────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
+              child: Row(
+                children: [
+                  Text('Recommended for You',
+                      style: GoogleFonts.inter(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary)),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Text('✨ AI Powered',
+                        style: GoogleFonts.inter(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: featuredProviders.isEmpty
+                ? const SizedBox.shrink()
+                : SizedBox(
+                    height: 230,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.fromLTRB(20, 0, 8, 0),
+                      itemCount: (featuredProviders.length / 2).ceil(),
+                      itemBuilder: (_, i) {
+                        final p = featuredProviders[featuredProviders.length - 1 - i];
+                        return _ProviderCard(
+                          provider: p,
+                          onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => ProviderDetailsScreen(
+                                      providerId: p.id))),
+                        );
+                      },
+                    ),
+                  ),
           ),
 
           // ── Active Bookings ────────────────────────────────────────────

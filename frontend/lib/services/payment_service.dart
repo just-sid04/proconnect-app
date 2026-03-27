@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/payment_model.dart';
 import 'dart:async';
+import 'event_service.dart';
 
 class PaymentService {
   final _supabase = Supabase.instance.client;
@@ -41,6 +42,8 @@ class PaymentService {
         'status': 'success',
         'payment_id': mockPayId,
       }).eq('id', paymentId);
+
+      EventService.logPaymentSuccess(mockPayId, amount);
 
       // 4. Update Booking Table Flags
       final updateData = <String, dynamic>{};
