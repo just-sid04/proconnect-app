@@ -102,13 +102,24 @@ class _ProviderNavBar extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
           child: Container(
-            height: 64,
+            height: 68,
             decoration: BoxDecoration(
-              color: AppTheme.navySurface,
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: AppTheme.dividerColor, width: 1),
-              boxShadow: AppTheme.glowShadow(AppTheme.primaryColor,
-                  blur: 20, spread: -4),
+              color: AppTheme.navySurface.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(34),
+              border: Border.all(color: AppTheme.primaryColor.withOpacity(0.12), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryColor.withOpacity(0.15),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                  spreadRadius: -8
+                ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -447,8 +458,18 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
             : 'Good evening';
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 56, 20, 24),
-      decoration: const BoxDecoration(gradient: AppTheme.heroGradient),
+      padding: const EdgeInsets.fromLTRB(20, 56, 20, 32),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF6366F1).withOpacity(0.08), 
+            const Color(0xFF6366F1).withOpacity(0.02),
+            Colors.transparent
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
       child: Row(children: [
         Expanded(
             child:
@@ -518,8 +539,14 @@ class _ProviderDashboardTabState extends State<ProviderDashboardTab> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: AppTheme.primaryGradient,
-            border: Border.all(color: AppTheme.accentColor, width: 2),
-            boxShadow: AppTheme.glowShadow(AppTheme.primaryColor, blur: 16),
+            border: Border.all(color: AppTheme.primaryColor.withOpacity(0.2), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryColor.withOpacity(0.3),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: (photo?.isNotEmpty ?? false)
               ? ClipOval(child: Image.network(photo!, fit: BoxFit.cover))
@@ -553,23 +580,36 @@ class _KpiCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color.withAlpha(40), color.withAlpha(15)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withAlpha(80), width: 1),
+          color: AppTheme.navySurface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.1), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.12),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+              spreadRadius: -4
+            ),
+          ],
         ),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, color: color, size: 22),
-          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 10),
           Text(value,
               style: GoogleFonts.inter(
                   fontSize: 22, fontWeight: FontWeight.w800, color: color)),
           Text(label,
-              style:
-                  GoogleFonts.inter(fontSize: 11, color: color.withAlpha(180))),
+              style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: color.withOpacity(0.6))),
         ]),
       );
 }

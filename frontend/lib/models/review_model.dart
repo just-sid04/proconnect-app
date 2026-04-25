@@ -56,9 +56,9 @@ class Review {
       'rating': rating,
       'comment': comment,
       'createdAt': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
       'images': images,
-      'provider_response': providerResponse,
+      'providerResponse': providerResponse,
     };
   }
 
@@ -99,7 +99,7 @@ class RatingSummary {
     final distribution = json['ratingDistribution'] ?? {};
     return RatingSummary(
       averageRating: (json['averageRating'] ?? 0).toDouble(),
-      totalReviews: json['totalReviews'] ?? 0,
+      totalReviews: (json['totalReviews'] ?? 0).toInt(),
       ratingDistribution: {
         5: distribution['5'] ?? 0,
         4: distribution['4'] ?? 0,

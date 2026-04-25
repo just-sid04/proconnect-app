@@ -73,9 +73,34 @@ class AppTheme {
       ];
 
   static List<BoxShadow> get cardShadow => [
-        const BoxShadow(
-            color: Color(0x0C000000), blurRadius: 8, offset: Offset(0, 3)),
+        BoxShadow(
+            color: const Color(0xFF0F172A).withAlpha(15), 
+            blurRadius: 10, 
+            offset: const Offset(0, 4)
+        ),
       ];
+
+  static List<BoxShadow> get premiumShadow => [
+        BoxShadow(
+            color: primaryColor.withAlpha(50), 
+            blurRadius: 20, 
+            offset: const Offset(0, 8),
+            spreadRadius: -4
+        ),
+      ];
+
+  static BoxDecoration glassDecoration({
+    Color color = Colors.white,
+    double opacity = 0.7,
+    double blur = 10,
+    BorderRadius? borderRadius,
+  }) =>
+      BoxDecoration(
+        color: color.withOpacity(opacity),
+        borderRadius: borderRadius ?? BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+        boxShadow: cardShadow,
+      );
 
   // ─── Theme ─────────────────────────────────────────────────────────────────
   static ThemeData get lightTheme => _buildTheme();

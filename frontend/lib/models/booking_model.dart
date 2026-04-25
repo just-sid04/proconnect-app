@@ -110,9 +110,9 @@ class Booking {
       'startedAt': startedAt?.toIso8601String(),
       'completedAt': completedAt?.toIso8601String(),
       'cancelledAt': cancelledAt?.toIso8601String(),
-      'cancellation_reason': cancellationReason,
-      'advance_paid': advancePaid,
-      'final_paid': finalPaid,
+      'cancellationReason': cancellationReason,
+      'advancePaid': advancePaid,
+      'finalPaid': finalPaid,
     };
   }
 

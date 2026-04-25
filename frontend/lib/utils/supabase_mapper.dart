@@ -19,6 +19,7 @@ dynamic _convertValue(dynamic value) {
 }
 
 String _snakeToCamel(String s) {
+  if (!s.contains('_')) return s;
   return s.split('_').fold('', (a, b) {
     if (a.isEmpty) return b.toLowerCase();
     return a + b[0].toUpperCase() + b.substring(1).toLowerCase();

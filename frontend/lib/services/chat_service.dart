@@ -42,8 +42,12 @@ class ChatService {
   }
 
   /// Stream of unread message counts for the current user
-  /// Filtering messages for bookings where the user is a participant
   static Stream<List<Map<String, dynamic>>> getUnreadMessagesStream() {
+    final userId = client.auth.currentUser?.id;
+    if (userId == null) return Stream.value([]);
+    
+    // We filter by is_read=false. RLS handles participant checks,
+    // but we can add sender_id check to avoid counting our own messages.
     return client
         .from('messages')
         .stream(primaryKey: ['id'])

@@ -8,6 +8,7 @@ class User {
   final Location? location;
   final bool isActive;
   final bool isVerified;
+  final String? fcmToken;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -21,6 +22,7 @@ class User {
     this.location,
     required this.isActive,
     required this.isVerified,
+    this.fcmToken,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -36,6 +38,7 @@ class User {
       location: json['location'] != null ? Location.fromJson(json['location']) : null,
       isActive: json['isActive'] ?? true,
       isVerified: json['isVerified'] ?? false,
+      fcmToken: json['fcmToken'],
       createdAt: DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String()),
       updatedAt: DateTime.parse(json['updatedAt'] ?? DateTime.now().toIso8601String()),
     );
@@ -52,6 +55,7 @@ class User {
       'location': location?.toJson(),
       'isActive': isActive,
       'isVerified': isVerified,
+      'fcmToken': fcmToken,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -67,6 +71,7 @@ class User {
     Location? location,
     bool? isActive,
     bool? isVerified,
+    String? fcmToken,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -80,6 +85,7 @@ class User {
       location: location ?? this.location,
       isActive: isActive ?? this.isActive,
       isVerified: isVerified ?? this.isVerified,
+      fcmToken: fcmToken ?? this.fcmToken,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

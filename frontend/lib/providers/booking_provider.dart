@@ -8,6 +8,7 @@ import '../services/payment_service.dart';
 import '../models/payment_model.dart';
 import '../utils/constants.dart';
 import '../services/provider_service.dart';
+import '../utils/supabase_mapper.dart';
 
 class BookingProvider extends ChangeNotifier {
   final BookingService _bookingService = BookingService();
@@ -481,13 +482,19 @@ class BookingProvider extends ChangeNotifier {
 
   /// Handles all Supabase realtime events (INSERT / UPDATE / DELETE).
   Future<void> _handleRealtimeEvent(PostgresChangePayload payload) async {
-    if (payload.eventType == PostgresChangeEvent.insert) {
-      final newId = payload.newRecord['id'] as String?;
-      if (newId == null) return;
+    final event = payload.eventType;
+    final Map<String, dynamic> newRecord = Map<String, dynamic>.from(payload.newRecord);
+    final String newId = (newRecord['id'] ?? '').toString();
+    if (newId.isEmpty) return;
+
+    // Convert keys to camelCase for consistency with our local models
+    final mappedRecord = supabaseRowToJson(newRecord);
+
+    if (event == PostgresChangeEvent.insert) {
       // Avoid duplicates
       if (_bookings.any((b) => b.id == newId)) return;
 
-      // Fetch with full join so we have provider/customer details
+      // For new bookings, we need the full joined data (customer/provider details)
       final res = await _bookingService.getBookingById(newId);
       if (res.success && res.data != null) {
         _bookings.insert(0, res.data!);
@@ -496,47 +503,59 @@ class BookingProvider extends ChangeNotifier {
         if (res.data!.status == AppConstants.statusPending) {
           _startAcceptanceTimer(res.data!.id);
         }
+        notifyListeners();
+      }
+    } else if (event == PostgresChangeEvent.update) {
+      final index = _bookings.indexWhere((b) => b.id == newId);
+      if (index != -1) {
+        final existingBooking = _bookings[index];
+        final newStatus = mappedRecord['status'] as String?;
+        final isAdvancePaid = mappedRecord['advancePaid'] as bool?;
+        final isFinalPaid = mappedRecord['finalPaid'] as bool?;
         
-        notifyListeners();
-      }
-    } else if (payload.eventType == PostgresChangeEvent.update) {
-      final id = payload.newRecord['id'] as String?;
-      if (id == null) return;
-
-      // Cancel timer if status changed via realtime
-      final newStatus = payload.newRecord['status'] as String?;
-      if (newStatus != AppConstants.statusPending) {
-        _acceptanceTimers[id]?.cancel();
-        _acceptanceTimers.remove(id);
-      }
-
-      // IDEMPOTENCY: Check if we already have this update locally (from optimistic UI)
-      final existingIndex = _bookings.indexWhere((b) => b.id == id);
-      if (existingIndex != -1) {
-        final existingStatus = _bookings[existingIndex].status;
-        final newStatus = payload.newRecord['status'] as String?;
-        if (existingStatus == newStatus) {
-          // Update matches what we have — no need to re-fetch full object
-          return;
+        // Cancel timer if status changed via realtime
+        if (newStatus != null && newStatus != AppConstants.statusPending) {
+          _acceptanceTimers[newId]?.cancel();
+          _acceptanceTimers.remove(newId);
         }
-      }
 
-      final res = await _bookingService.getBookingById(id);
-      if (res.success && res.data != null) {
-        final updated = res.data!;
-        if (existingIndex != -1) {
-          _bookings[existingIndex] = updated;
+        // Optimization: If only status, payment flags, or timestamps changed, update locally
+        // This avoids UI flicker and redundant network calls for joined data we already have
+        bool needsFullFetch = false;
+        
+        // If provider changed (reassignment), we MUST re-fetch for full joined data
+        if (mappedRecord['providerId'] != null && mappedRecord['providerId'] != existingBooking.providerId) {
+          needsFullFetch = true;
+        }
+
+        if (needsFullFetch) {
+          final res = await _bookingService.getBookingById(newId);
+          if (res.success && res.data != null) {
+            _bookings[index] = res.data!;
+            if (_currentBooking?.id == newId) _currentBooking = res.data;
+            notifyListeners();
+          }
         } else {
-          _bookings.insert(0, updated);
+          // Update known changed fields locally
+          _bookings[index] = existingBooking.copyWith(
+            status: newStatus ?? existingBooking.status,
+            updatedAt: DateTime.tryParse(mappedRecord['updatedAt'] ?? '') ?? existingBooking.updatedAt,
+            advancePaid: isAdvancePaid ?? existingBooking.advancePaid,
+            finalPaid: isFinalPaid ?? existingBooking.finalPaid,
+            acceptedAt: mappedRecord['acceptedAt'] != null 
+                ? DateTime.tryParse(mappedRecord['acceptedAt']) 
+                : existingBooking.acceptedAt,
+          );
+          
+          if (_currentBooking?.id == newId) {
+            _currentBooking = _bookings[index];
+          }
+          notifyListeners();
         }
-        if (_currentBooking?.id == id) _currentBooking = updated;
-        notifyListeners();
       }
-    } else if (payload.eventType == PostgresChangeEvent.delete) {
-      final id = payload.oldRecord['id'] as String?;
-      if (id == null) return;
-      _bookings.removeWhere((b) => b.id == id);
-      if (_currentBooking?.id == id) _currentBooking = null;
+    } else if (event == PostgresChangeEvent.delete) {
+      _bookings.removeWhere((b) => b.id == newId);
+      if (_currentBooking?.id == newId) _currentBooking = null;
       notifyListeners();
     }
   }

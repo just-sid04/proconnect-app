@@ -7,7 +7,7 @@ class ChatProvider extends ChangeNotifier {
   
   Map<String, int> _unreadCounts = {}; // bookingId -> count
   int _totalUnread = 0;
-  bool _isLoading = false;
+  final bool _isLoading = false;
   StreamSubscription? _unreadSubscription;
 
   ChatProvider(this.userId) {

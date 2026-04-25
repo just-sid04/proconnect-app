@@ -120,8 +120,9 @@ class _LoginScreenState extends State<LoginScreen>
                           prefixIcon: Icons.email_outlined,
                           textInputAction: TextInputAction.next,
                           validator: (v) {
-                            if (v == null || v.isEmpty)
+                            if (v == null || v.isEmpty) {
                               return 'Enter your email';
+                            }
                             if (!v.contains('@')) return 'Enter a valid email';
                             return null;
                           },
@@ -146,8 +147,9 @@ class _LoginScreenState extends State<LoginScreen>
                                 setState(() => _obscurePass = !_obscurePass),
                           ),
                           validator: (v) {
-                            if (v == null || v.isEmpty)
+                            if (v == null || v.isEmpty) {
                               return 'Enter your password';
+                            }
                             if (v.length < 6) return 'At least 6 characters';
                             return null;
                           },

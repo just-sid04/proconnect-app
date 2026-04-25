@@ -94,13 +94,24 @@ class _FloatingNavBar extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
           child: Container(
-            height: 64,
+            height: 68,
             decoration: BoxDecoration(
-              color: AppTheme.navySurface,
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: AppTheme.dividerColor, width: 1),
-              boxShadow: AppTheme.glowShadow(AppTheme.primaryColor,
-                  blur: 20, spread: -4),
+              color: AppTheme.navySurface.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(34),
+              border: Border.all(color: AppTheme.primaryColor.withOpacity(0.12), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryColor.withOpacity(0.15),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                  spreadRadius: -8
+                ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -315,16 +326,35 @@ class _HomeTabState extends State<HomeTab> {
                           color: AppTheme.textPrimary)),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                       borderRadius: BorderRadius.circular(100),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF8B5CF6).withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    child: Text('✨ AI Powered',
-                        style: GoogleFonts.inter(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.auto_awesome, size: 10, color: Colors.white),
+                        const SizedBox(width: 4),
+                        Text('AI POWERED',
+                            style: GoogleFonts.inter(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                                color: Colors.white)),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -433,8 +463,18 @@ class _HomeTabState extends State<HomeTab> {
     final topPad = MediaQuery.of(context).padding.top + 16;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(20, topPad, 20, 24),
-      decoration: const BoxDecoration(gradient: AppTheme.heroGradient),
+      padding: EdgeInsets.fromLTRB(20, topPad, 20, 32),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF6366F1).withOpacity(0.08), 
+            const Color(0xFF6366F1).withOpacity(0.02),
+            Colors.transparent
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         // Top row
         Row(children: [
@@ -472,66 +512,64 @@ class _HomeTabState extends State<HomeTab> {
                     ? ClipOval(child: Image.network(photo!, fit: BoxFit.cover))
                     : Center(
                         child: Text(
-                        name.isNotEmpty ? name[0].toUpperCase() : 'G',
-                        style: GoogleFonts.inter(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white),
-                      )),
+                          name.isNotEmpty ? name[0].toUpperCase() : 'G',
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
               ),
             ),
-          ]),
         ]),
-
-        const SizedBox(height: 24),
+      ]),
+      const SizedBox(height: 24),
 
         // Search bar
         GestureDetector(
           onTap: widget.openBrowse,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
               color: AppTheme.navySurface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.dividerColor, width: 1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: AppTheme.primaryColor.withOpacity(0.12), width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Row(children: [
               const Icon(Icons.search_rounded,
-                  color: AppTheme.textSecondary, size: 20),
-              const SizedBox(width: 12),
+                  color: AppTheme.primaryColor, size: 22),
+              const SizedBox(width: 14),
               Expanded(
-                  child: Text('Search for services...',
+                  child: Text('What service do you need?',
                       style: GoogleFonts.inter(
-                          color: AppTheme.textHint, fontSize: 14))),
+                          color: AppTheme.textSecondary.withOpacity(0.6), 
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500))),
+              Container(
+                width: 1,
+                height: 24,
+                color: AppTheme.dividerColor,
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+              ),
               GestureDetector(
                 onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (_) => const NearbyProvidersMap())),
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentColor.withAlpha(40),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.map_rounded,
-                      color: AppTheme.accentColor, size: 16),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withAlpha(40),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.tune_rounded,
-                    color: AppTheme.primaryColor, size: 16),
+                child: const Icon(Icons.map_rounded,
+                    color: AppTheme.primaryColor, size: 20),
               ),
             ]),
           ),
         ),
-
         const SizedBox(height: 20),
 
         // Quick stats
@@ -595,14 +633,16 @@ class _QuickStat extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.textPrimary)),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: color)),
                     Text(label,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
-                            fontSize: 10, color: AppTheme.textSecondary)),
+                            fontSize: 10, 
+                            fontWeight: FontWeight.w600,
+                            color: color.withOpacity(0.7))),
                   ]),
             ),
           ]),
@@ -825,7 +865,7 @@ class _ProviderCardState extends State<_ProviderCard> {
               ]),
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -833,24 +873,25 @@ class _ProviderCardState extends State<_ProviderCard> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.textPrimary)),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.textPrimary,
+                            letterSpacing: -0.2)),
                     const SizedBox(height: 3),
                     // Category pill
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryColor.withAlpha(30),
-                        borderRadius: BorderRadius.circular(100),
+                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(p.category?.name ?? 'Service',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
                               fontSize: 10,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                               color: AppTheme.primaryColor)),
                     ),
                     const SizedBox(height: 10),

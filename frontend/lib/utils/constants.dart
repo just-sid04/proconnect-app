@@ -8,7 +8,7 @@ class AppConstants {
   static const String _supabaseUrlFallback =
       'https://mhhywdmgkagbephtnjqd.supabase.co';
   static const String _supabaseAnonKeyFallback =
-      'sb_publishable_IXOINzIKDPdms23vaVeK5A_PmvfRQ9c';
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oaHl3ZG1na2FnYmVwaHRuanFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyODE2NTAsImV4cCI6MjA4OTg1NzY1MH0.bbSJeTHJo-m-KwlWJPzlTQHspVlqRZjmuQtYI79s_Vc';
 
   static String get supabaseUrl {
     const url = String.fromEnvironment('SUPABASE_URL', defaultValue: '');
